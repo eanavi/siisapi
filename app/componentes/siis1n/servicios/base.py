@@ -3,16 +3,20 @@ from typing import List, Type, TypeVar, Generic, Union
 from uuid import UUID
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException, status
+from app.componentes.siis1n.modelos.persona import Persona
+from app.componentes.siis1n.modelos.empleado import Empleado
+from app.componentes.siis1n.esquemas.empleado import EmpleadoPersona
 from app.utiles.paginacion import paginacion
 
 T = TypeVar("T", bound=DeclarativeBase)
 
+
 class ServicioBase(Generic[T]):
-    def __init__(self, modelo:type[T], id_column:str):
+    def __init__(self, modelo: type[T], id_column: str):
         self.modelo = modelo
         self.id_column = id_column
-    
-    def crear(self, db:Session, obj:dict) -> T:
+
+    def crear(self, db: Session, obj: dict) -> T:
         try:
             nuevo_obj = self.modelo(**obj)
             db.add(nuevo_obj)
@@ -21,42 +25,41 @@ class ServicioBase(Generic[T]):
             return nuevo_obj
         except SQLAlchemyError as e:
             db.rollback()
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                 detail=f"Error al crear el objeto: {str(e)}")
-    
-    def leer(self, db:Session, id:Union[int,UUID]) -> T:
+
+    def leer(self, db: Session, id: Union[int, UUID]) -> T:
         try:
-            query = db.query(self.modelo).filter(
-                getattr(self.modelo, self.id_column)==id,
+            db_obj = db.query(self.modelo).filter(
+                getattr(self.modelo, self.id_column) == id,
                 self.modelo.estado_reg == 'V'
-                )
-            db_obj = db.query(self.modelo).first()
+            ).first()
             if not db_obj:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                     detail=f"Objeto no encontrado")
             return db_obj
         except SQLAlchemyError as e:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-                            detail=f"Error al leer el objeto: {str(e)}")
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail=f"Error al leer el objeto: {str(e)}")
 
-    def leer_todos(self, db:Session, pagina:int=1, tamanio:int=10) -> List[T]:
+    def leer_todos(self, db: Session, pagina: int = 1, tamanio: int = 10) -> List[T]:
         try:
             db_objs = db.query(self.modelo).filter(
                 self.modelo.estado_reg == 'V'
-                ).all()
+            ).all()
             return paginacion(db_objs, pagina, tamanio)
         except SQLAlchemyError as e:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                 detail=f"Error al leer los objetos: {str(e)}")
-    
-    def actualizar(self, db:Session, id:Union[int,UUID], obj:dict) -> T:
+
+    def actualizar(self, db: Session, id: Union[int, UUID], obj: dict) -> T:
         try:
             db_obj = db.query(self.modelo).filter(
-                getattr(self.modelo, self.id_column)==id,
+                getattr(self.modelo, self.id_column) == id,
                 self.modelo.estado_reg == 'V'
-                ).first()
+            ).first()
             if not db_obj:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                     detail=f"Objeto no encontrado")
             for key, value in obj.items():
                 setattr(db_obj, key, value)
@@ -65,39 +68,39 @@ class ServicioBase(Generic[T]):
             return db_obj
         except SQLAlchemyError as e:
             db.rollback()
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                 detail=f"Error al actualizar el objeto: {str(e)}")
-    
-    def eliminar(self, db:Session, id:Union[int,UUID]) -> bool:
+
+    def eliminar(self, db: Session, id: Union[int, UUID]) -> bool:
         try:
             db_obj = db.query(self.modelo).filter(
-                getattr(self.modelo, self.id_column)==id,
+                getattr(self.modelo, self.id_column) == id,
                 self.modelo.estado_reg == 'V'
-                ).first()
-            if not db_obj:  
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+            ).first()
+            if not db_obj:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                     detail=f"Objeto no encontrado")
-            db_obj.estado_reg = 'A' # Anulado
+            db_obj.estado_reg = 'A'  # Anulado
             db.commit()
             db.refresh(db_obj)
             return True
         except SQLAlchemyError as e:
             db.rollback()
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                 detail=f"Error al eliminar el objeto: {str(e)}")
-    
-    def eliminar_fisico(self, db:Session, id:Union[int,UUID]) -> bool:
+
+    def eliminar_fisico(self, db: Session, id: Union[int, UUID]) -> bool:
         try:
             db_obj = db.query(self.modelo).filter(
-                getattr(self.modelo, self.id_column)==id
-                ).first()
-            if not db_obj:  
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                getattr(self.modelo, self.id_column) == id
+            ).first()
+            if not db_obj:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                     detail=f"Objeto no encontrado")
             db.delete(db_obj)
             db.commit()
             return True
         except SQLAlchemyError as e:
             db.rollback()
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                 detail=f"Error al eliminar el objeto: {str(e)}")
