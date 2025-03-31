@@ -5,7 +5,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.componentes.siis1n.servicios.persona import ServicioPersona
 from app.componentes.siis1n.esquemas.persona import RespuestaPaginada, PersonaResponse, PersonaCreate
 from app.nucleo.baseDatos import leer_bd
-from typing import List
 
 
 serv_persona = ServicioPersona()
@@ -84,11 +83,7 @@ def crear_persona(persona: PersonaCreate, db: Session = Depends(leer_bd)):
         )
 
 
-@router.put("/{id_persona}",
-            response_model=PersonaResponse,
-            summary="Actualizar una Persona",
-            description="Actualiza los datos de una persona registrada en el sistema"
-            )
+@router.put("/{id_persona}",            response_model=PersonaResponse,            summary="Actualizar una Persona",            description="Actualiza los datos de una persona registrada en el sistema")
 def actualizar_persona(id_persona: UUID, persona: PersonaCreate, db: Session = Depends(leer_bd)):
     try:
         persona_actualizada = serv_persona.actualizar(
@@ -112,8 +107,7 @@ def actualizar_persona(id_persona: UUID, persona: PersonaCreate, db: Session = D
 @router.delete("/{id_persona}",
                response_model=bool,
                summary="Eliminar una Persona",
-               description="Elimina una persona registrada en el sistema"
-               )
+               description="Elimina una persona registrada en el sistema")
 def eliminar_persona(id_persona: UUID, db: Session = Depends(leer_bd)):
     if not serv_persona.eliminar(db, id_persona):
         raise HTTPException(

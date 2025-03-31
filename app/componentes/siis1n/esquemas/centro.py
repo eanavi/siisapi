@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 
 
 class CentroBase(BaseModel):
@@ -29,3 +29,10 @@ class CentroResponse(CentroBase):
 
     class Config:
         from_attributes = True
+
+
+class CentroPaginado(BaseModel):
+    total: int
+    pagina: int
+    tamanio: int
+    items: List[CentroResponse]

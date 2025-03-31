@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 
 
 class RolBase(BaseModel):
@@ -19,3 +19,10 @@ class RolResponse(RolBase):
 
     class Config:
         from_atributes = True
+
+
+class RespuestaPaginada(BaseModel):
+    total: int
+    pagina: int
+    tamanio: int
+    items: List[RolResponse]

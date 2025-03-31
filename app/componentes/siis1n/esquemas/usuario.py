@@ -1,5 +1,5 @@
 from pydantic import BaseModel, UUID4, Field
-from typing import Optional
+from typing import Optional, List
 
 
 class UsurioBase(BaseModel):
@@ -26,3 +26,10 @@ class UsuarioResponse(UsurioBase):
 
     class Config:
         from_atributes = True
+
+
+class RespuestaPaginada(BaseModel):
+    total: int
+    pagina: int
+    tamanio: int
+    items: List[UsuarioResponse]

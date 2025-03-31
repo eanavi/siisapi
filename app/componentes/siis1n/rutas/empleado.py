@@ -23,7 +23,8 @@ def listar_personas(
     return empleados
 
 
-@router.get("/{id_empleado}", response_model=EmpleadoPersona, summary="Obtener Empleado por ID",
+@router.get("/{id_empleado}", response_model=EmpleadoPersona,
+            summary="Obtener Empleado por ID",
             description="Obtiene un empleado por su ID")
 def obtener_empleado(id_empleado: int, db: Session = Depends(leer_bd)):
     try:
@@ -41,7 +42,8 @@ def obtener_empleado(id_empleado: int, db: Session = Depends(leer_bd)):
         )
 
 
-@router.post("/", response_model=EmpleadoResponse, summary="Registrar un nuevo Empleado",
+@router.post("/", response_model=EmpleadoResponse,
+             summary="Registrar un nuevo Empleado",
              description="Registra un nuevo empleado en el sistema")
 def crear_empleado(empleado_persona: EmpleadoPersona, db: Session = Depends(leer_bd)):
     try:
@@ -50,14 +52,23 @@ def crear_empleado(empleado_persona: EmpleadoPersona, db: Session = Depends(leer
         return empleado
     except SQLAlchemyError as e:
         print(f"Error al crear el empleado: {str(e)}")
+        db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al crear el empleado: {str(e)}"
         )
+    except HTTPException as htp_ex:
+        raise htp_ex
+    except Exception as ex:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error inesperado al crear el empleado: {str(e)}"
+        )
 
 
 @router.put("/{id_empleado}", response_model=EmpleadoPersona,
-            summary="Actualizar Empleado", description="Actualiza un empleado por su ID")
+            summary="Actualizar Empleado",
+            description="Actualiza un empleado por su ID")
 def actualizar_empleado(id_empleado: int, empleado_persona: EmpleadoPersona,
                         db: Session = Depends(leer_bd)):
     try:
@@ -68,8 +79,29 @@ def actualizar_empleado(id_empleado: int, empleado_persona: EmpleadoPersona,
                 status_code=404, detail="Empleado no encontrado")
         return empleado
     except SQLAlchemyError as e:
+        db.rollback()
         print(f"Error al actualizar el empleado: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al actualizar el empleado: {str(e)}"
         )
+    except HTTPException as ht_ex:
+        raise ht_ex
+    except Exception as ex:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error inesperado al actualizar el empleado: {str(e)}"
+        )
+
+
+@router.delete("/{id_empleado}",
+               response_model=bool,
+               summary=f"Eliminar un empleado",
+               description=f"Elimina un empleado de forma logica registrado en el sistema")
+def eliminar_empleado(id_empleado: int, db: Session = Depends(leer_bd)):
+    if not serv_empleado.eliminar(db, id_empleado):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Empleado no encontrado"
+        )
+    return True
