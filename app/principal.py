@@ -7,7 +7,7 @@ from sqlalchemy import text
 
 
 @asynccontextmanager
-async def inicioApp(app:FastAPI):
+async def inicioApp(app: FastAPI):
     try:
         init_bd()
         yield
@@ -21,7 +21,7 @@ app = FastAPI(
     version="1.1.0",
     contact={
         "name": "Elvis R. Anavi Jiménez",
-        "email":"eanavi@gmail.com"
+        "email": "eanavi@gmail.com"
     },
     lifespan=inicioApp
 )
@@ -29,14 +29,16 @@ app = FastAPI(
 
 app.include_router(siis1n_router)
 
+
 @app.get("/test-bd")
-def test_bd(db:Session = Depends(leer_bd)):
+def test_bd(db: Session = Depends(leer_bd)):
     try:
         db.execute(text('select 1'))
-        return {"mensaje":"conexion exitosa"}
+        return {"mensaje": "conexion exitosa"}
     except Exception as e:
-        return {"mensaje":f"Error en la bd"}
+        return {"mensaje": f"Error en la bd"}
+
 
 @app.get("/")
-def leer_root(request:Request):
-    return {"mensaje":"Bienvenido a la Api SiiS"}
+def leer_root(request: Request):
+    return {"mensaje": "Bienvenido a la Api SiiS"}

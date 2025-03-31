@@ -11,7 +11,8 @@ class Usuario(ModeloBase):
     id_empleado = Column(Integer, ForeignKey(
         'empleado.id_empleado'), nullable=False)
     id_rol = Column(Integer, ForeignKey('rol.id_rol'), nullable=False)
-    nombre_usuario = Column(String(20), nullable=False)
+    nombre_usuario = Column(String(20), nullable=False,
+                            unique=True, index=True)
     clave = Column(String(255), nullable=False)
 
     empleado = relationship('Empleado', back_populates='usuarios')

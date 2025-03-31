@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from app.componentes.siis1n.servicios.persona import ServicioPersona
 from app.componentes.siis1n.esquemas.persona import RespuestaPaginada, PersonaResponse, PersonaCreate
+from app.nucleo.seguridad import verificar_token
 from app.nucleo.baseDatos import leer_bd
 
 
@@ -12,7 +13,10 @@ serv_persona = ServicioPersona()
 router = APIRouter(prefix="/personas", tags=["Personas"])
 
 
-@router.get("/", response_model=RespuestaPaginada, summary="Listar todas las Personas",
+@router.get("/",
+            response_model=RespuestaPaginada,
+            dependencies=[Depends(verificar_token)],
+            summary="Listar todas las Personas",
             description="Lista todas las personas registradas en el sistema")
 def listar_personas(
     pagina: int = Query(1, alias="pagina", ge=1,
