@@ -83,7 +83,10 @@ def crear_persona(persona: PersonaCreate, db: Session = Depends(leer_bd)):
         )
 
 
-@router.put("/{id_persona}",            response_model=PersonaResponse,            summary="Actualizar una Persona",            description="Actualiza los datos de una persona registrada en el sistema")
+@router.put("/{id_persona}",
+            response_model=PersonaResponse,
+            summary="Actualizar una Persona",
+            description="Actualiza los datos de una persona registrada en el sistema")
 def actualizar_persona(id_persona: UUID, persona: PersonaCreate, db: Session = Depends(leer_bd)):
     try:
         persona_actualizada = serv_persona.actualizar(
