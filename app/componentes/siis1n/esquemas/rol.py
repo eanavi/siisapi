@@ -1,12 +1,18 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
 
 
 class RolBase(BaseModel):
-    nombre: str = Field(..., example="Administrador",
-                        title="Nombre", description="Nombre del rol")
+    model_config = ConfigDict(from_attributes=True)
+
+    nombre: str = Field(
+        ..., title="Nombre",
+        description="Nombre del rol",
+        json_schema_extra={"example": "Administrador"})
     descripcion: Optional[str] = Field(
-        None, example="Rol con todos los permisos", title="Descripcion", description="Descripcion del rol")
+        None, title="Descripcion",
+        description="Descripcion del rol",
+        json_schema_extra={"example": "Rol con todos los permisos"})
 
 
 class RolCreate(RolBase):
@@ -14,14 +20,15 @@ class RolCreate(RolBase):
 
 
 class RolResponse(RolBase):
-    id_rol: int = Field(..., example=1, title="Id Rol",
-                        description="Identificador unico del rol")
-
-    class Config:
-        from_atributes = True
+    id_rol: int = Field(
+        ..., title="Id Rol",
+        description="Identificador unico del rol",
+        json_schema_extra={"example": 1})
 
 
 class RespuestaPaginada(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     total: int
     pagina: int
     tamanio: int

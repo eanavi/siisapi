@@ -1,0 +1,10 @@
+clave del Sitio
+
+
+
+
+servidor base de datos postgresql 
+nombre de la base de datos: bdsiis2
+nombre Servidor: siisserver
+nombre de usuario : orbopbwwax
+clave : $AQmNCsJl7lPte7s

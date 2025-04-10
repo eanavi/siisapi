@@ -29,42 +29,16 @@ def listar_centros(
             summary=f"Obtener un centro de salud por su identificador",
             description=f"Obtiene un centro de salud por su ID")
 def obtener_centro(id_centro: int, db: Session = Depends(leer_bd)):
-    try:
-        centro = serv_centro.leer(db, id_centro)
-        if not centro:
-            raise HTTPException(
-                status_code=404, detail="Centro de Salud no encontrado"
-            )
-        return centro
-    except Exception as e:
-        print(f"Error al obtener el centro: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al obtener el centro de salud: {str(e)}"
-        )
+    centro = serv_centro.leer(db, id_centro)
+    return centro
 
 
 @router.post("/", response_model=CentroResponse,
              summary="Registrar un nuevo Centro de Salud",
              description="Registra un nuevo Centro de Salud en el Sistema")
 def crear_centro_salud(centro_salud: CentroCreate, db: Session = Depends(leer_bd)):
-    try:
-        centro = serv_centro.crear(db, centro_salud)
-        return centro
-    except SQLAlchemyError as e:
-        print(f"Error al crear el centro de salud: {str(e)}")
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al crear el empleado: {str(e)}"
-        )
-    except HTTPException as ht_ex:
-        raise ht_ex
-    except Exception as ex:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error inesperado al crear el centro de salud: {str(e)}"
-        )
+    centro = serv_centro.crear(db, centro_salud)
+    return centro
 
 
 @router.put("/{id_centro}",
@@ -73,22 +47,10 @@ def crear_centro_salud(centro_salud: CentroCreate, db: Session = Depends(leer_bd
             description="Actualiza los datos de un centro de salud registrado en el sistema"
             )
 def actualizar_centro(id_centro: int, centro: CentroCreate, db: Session = Depends(leer_bd)):
-    try:
-        centro_actualizado = serv_centro.actualizar(
-            db, id_centro, centro.model_dump()
-        )
-        return centro_actualizado
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al actualizar el centro de salud en la base de datos: {str(e)}"
-        )
-    except HTTPException as ht_ex:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error inesperado al actualizar la persona: {str(e)}"
-        )
+    centro_actualizado = serv_centro.actualizar(
+        db, id_centro, centro.model_dump()
+    )
+    return centro_actualizado
 
 
 @router.delete("/{id_centro}",
@@ -97,9 +59,5 @@ def actualizar_centro(id_centro: int, centro: CentroCreate, db: Session = Depend
                description=f"Elimina un centro de salud registrado en el sistema"
                )
 def eliminar_centro(id_centro: int, db: Session = Depends(leer_bd)):
-    if not serv_centro.eliminar(db, id_centro):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Centro de Salud no encontrado"
-        )
-    return True
+    resultado = serv_centro.eliminar(db, id_centro)
+    return resultado

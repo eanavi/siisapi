@@ -27,17 +27,5 @@ def listar_usuarios(
             summary=f"Obtener Usuario por ID",
             description=f"Obtiene un usuario por su II")
 def obtner_usuario(id_usuario: int, db: Session = Depends(leer_bd)):
-    try:
-        usuario = serv_usuario.leer(db, id_usuario)
-        if not usuario:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Usuario no encontrado"
-            )
-        return usuario
-    except Exception as e:
-        print(f"Error al obtrener el usuario: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al obtener el usuario: {str(e)}"
-        )
+    usuario = serv_usuario.leer(db, id_usuario)
+    return usuario

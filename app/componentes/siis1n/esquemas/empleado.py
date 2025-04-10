@@ -1,39 +1,61 @@
-from pydantic import BaseModel, UUID4, Field
+from pydantic import BaseModel, UUID4, Field, ConfigDict
 from app.componentes.siis1n.esquemas.persona import PersonaBase
 from typing import Optional, List
 
 
 class EmpleadoBase(BaseModel):
-    id_persona: UUID4 = Field(..., example="123e4567-e89b-12d3-a456-426614174000",
-                              title="Id Persona", description="Identificador unico de la persona")
-    tipo_empleado: str = Field(..., example="E", title="Tipo de persona",
-                               description="Tipo de persona: 'A' = Administracion, 'M' = Medica")
-    profesion: int = Field(..., example=1, title="Profesion",
-                           description="Identificador unico de la profesion")
-    registro_profesional: Optional[str] = Field(None, example="123456",
-                                                title="Registro Profesional",
-                                                description="Registro profesional del empleado")
-    id_centro: int = Field(..., example=1, title="Id Centro",
-                           description="Identificador unico del centro")
-    cargo: Optional[str] = Field(None, example="Medico", title="Cargo",
-                                 description="Cargo del empleado")
+    model_config = ConfigDict(from_attributes=True)
+
+    id_persona: UUID4 = Field(
+        ..., title="Id Persona",
+        description="Identificador unico de la persona",
+        json_schema_extra={"example": "123e4567-e89b-12d3-a456-426614174000"})
+    tipo_empleado: str = Field(
+        ..., title="Tipo de persona",
+        description="Tipo de persona: 'A' = Administracion, 'M' = Medica",
+        json_schema_extra={"example": "E"})
+    profesion: int = Field(
+        ..., title="Profesion",
+        description="Identificador unico de la profesion",
+        json_schema_extra={"example": 1})
+    registro_profesional: Optional[str] = Field(
+        None, title="Registro Profesional",
+        description="Registro profesional del empleado",
+        json_schema_extra={"example": "123456"})
+    id_centro: int = Field(
+        ..., title="Id Centro",
+        description="Identificador unico del centro",
+        json_schema_extra={"example": 1})
+    cargo: Optional[str] = Field(
+        None,
+        title="Cargo",
+        description="Cargo del empleado",
+        json_schema_extra={"example": "Medico"})
 
 
 class EmpleadoPersona(PersonaBase):
-    tipo_empleado: str = Field(..., example="E", title="Tipo de persona",
-                               description="Tipo de persona: 'E' = Empleado, 'P' = Paciente")
-    profesion: int = Field(..., example=1, title="Profesion",
-                           description="Identificador unico de la profesion")
-    registro_profesional: Optional[str] = Field(None, example="123456",
-                                                title="Registro Profesional",
-                                                description="Registro profesional del empleado")
-    id_centro: int = Field(..., example=1, title="Id Centro",
-                           description="Identificador unico del centro")
-    cargo: Optional[str] = Field(None, example="Medico", title="Cargo",
-                                 description="Cargo del empleado")
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        from_attributes = True
+    tipo_empleado: str = Field(
+        ..., title="Tipo de persona",
+        description="Tipo de persona: 'E' = Empleado, 'P' = Paciente",
+        json_schema_extra={"example": "E"})
+    profesion: int = Field(
+        ..., title="Profesion",
+        description="Identificador unico de la profesion",
+        json_schema_extra={"example": 1})
+    registro_profesional: Optional[str] = Field(
+        None, title="Registro Profesional",
+        description="Registro profesional del empleado",
+        json_schema_extra={"example": "123456"})
+    id_centro: int = Field(
+        ..., title="Id Centro",
+        description="Identificador unico del centro",
+        json_schema_extra={"example": 1})
+    cargo: Optional[str] = Field(
+        None, title="Cargo",
+        description="Cargo del empleado",
+        json_schema_extra={"example": "Medico"})
 
 
 class EmpleadoCreate(EmpleadoBase):
@@ -41,14 +63,15 @@ class EmpleadoCreate(EmpleadoBase):
 
 
 class EmpleadoResponse(EmpleadoBase):
-    id_empleado: int = Field(..., example=1, title="Id Empleado",
-                             description="Identificador unico del empleado")
-
-    class Config:
-        from_atributes = True
+    id_empleado: int = Field(
+        ..., title="Id Empleado",
+        description="Identificador unico del empleado",
+        json_schema_extra={"example": 1})
 
 
 class RespuestaPaginada(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     total: int
     pagina: int
     tamanio: int

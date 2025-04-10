@@ -53,6 +53,8 @@ class ServicioBase(Generic[T]):
                                 detail=f"Error al leer los objetos: {str(e)}")
 
     def actualizar(self, db: Session, id: Union[int, UUID], obj: dict) -> T:
+        import pdb
+        pdb.set_trace()
         try:
             db_obj = db.query(self.modelo).filter(
                 getattr(self.modelo, self.id_column) == id,

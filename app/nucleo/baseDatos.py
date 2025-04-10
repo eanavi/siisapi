@@ -14,6 +14,7 @@ engine = create_engine(
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+
 def init_bd():
     try:
         ModeloBase.metadata.create_all(bind=engine)
@@ -21,13 +22,14 @@ def init_bd():
     except SQLAlchemyError as e:
         print(f"Error al inicializar la base de datos: {e}")
 
+
 def leer_bd():
     bd = SessionLocal()
     try:
         yield bd
     except SQLAlchemyError as e:
         print(f"Error al obtener la sesion de la base de datos: {e}")
-        bd.rollback() #Revertir cualquier transaccion
+        bd.rollback()  # Revertir cualquier transaccion
         raise
     finally:
         bd.close()

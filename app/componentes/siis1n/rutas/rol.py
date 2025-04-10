@@ -29,20 +29,8 @@ def listar_roles(
             summary=f"Obtener el detalle de un rol",
             description=f"Obtiene los detalles de un rol registrado en el sistema")
 def obtener_rol(id_rol: int, db: Session = Depends(leer_bd)):
-    try:
-        rol = serv_rol.leer(db, id_rol)
-        if not rol:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Rol con id {id_rol} no encontrado"
-            )
-        return rol
-    except Exception as e:
-        print(f"Error al obtener el rol: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al obtener el rol: {str(e)}"
-        )
+    rol = serv_rol.leer(db, id_rol)
+    return rol
 
 
 @router.post("/",
@@ -51,22 +39,8 @@ def obtener_rol(id_rol: int, db: Session = Depends(leer_bd)):
              description="Registra un nuevo rol en el sistema"
              )
 def crear_rol(rol: RolCreate, db: Session = Depends(leer_bd)):
-    try:
-        rol_creado = serv_rol.crear(db, rol.model_dump())
-        return rol_creado
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al crear el rol en la bd: {str(e)}"
-        )
-    except HTTPException as htp_es:
-        raise htp_es
-    except Exception as ex:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error inesperado al crear el rol: {str(e)}"
-        )
+    rol_creado = serv_rol.crear(db, rol.model_dump())
+    return rol_creado
 
 
 @router.put("/{id_rol}",
@@ -74,23 +48,8 @@ def crear_rol(rol: RolCreate, db: Session = Depends(leer_bd)):
             summary=f"Actualizar un Rol",
             description=f"Actualiza los datos de un rol registrado en el sistema")
 def actualizar_rol(id_rol: int, rol: RolCreate, bd: Session = Depends(leer_bd)):
-    try:
-        rol_actualizado = serv_rol.actualizar(
-            bd, id_rol, rol.model_dump())
-        return rol_actualizado
-    except SQLAlchemyError as e:
-        bd.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al actualizar el Rol en la bd: {str(e)}"
-        )
-    except HTTPException as htpex:
-        raise htpex
-    except Exception as ex:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error inesperado al atualizar el rol: {str(e)}"
-        )
+    rol_actualizado = serv_rol.actualizar(bd, id_rol, rol.model_dump())
+    return rol_actualizado
 
 
 @router.delete("/{id_rol}",
@@ -98,8 +57,5 @@ def actualizar_rol(id_rol: int, rol: RolCreate, bd: Session = Depends(leer_bd)):
                summary="Eliminar un Rol",
                description="Elimina un rol registrado en el sistema")
 def eliminar_rol(id_rol: int, db: Session = Depends(leer_bd)):
-    if not serv_rol.eliminar(db, id_rol):
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Rol no encontrado"
-        )
+    resultado = serv_rol.eliminar(db, id_rol)
+    return resultado

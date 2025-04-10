@@ -1,7 +1,6 @@
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError
 from app.componentes.siis1n.servicios.persona import ServicioPersona
 from app.componentes.siis1n.esquemas.persona import RespuestaPaginada, PersonaResponse, PersonaCreate
 from app.nucleo.seguridad import verificar_token
@@ -32,7 +31,8 @@ def listar_personas(
 @router.get("/buscar/{criterio}",
             response_model=RespuestaPaginada,
             summary="Buscar un conjunto de Personas",
-            description="Busca un conjunto de personas registradas en el sistema a partir del criterio de busqueda"
+            description="Busca un conjunto de personas registradas en el \
+                sistema a partir del criterio de busqueda"
             )
 def buscar_personas(
     criterio: str,
@@ -46,21 +46,13 @@ def buscar_personas(
     return personas
 
 
-@router.get("/{id_persona}", response_model=PersonaResponse, summary="Obtener una Persona detallada",
+@router.get("/{id_persona}",
+            response_model=PersonaResponse,
+            summary="Obtener una Persona detallada",
             description="Obtiene los detalles de una persona registrada en el sistema")
 def obtener_persona(id_persona: UUID, db: Session = Depends(leer_bd)):
-    try:
-        persona = serv_persona.leer(db, id_persona)
-        if not persona:
-            raise HTTPException(
-                status_code=404, detail="Persona no encontrada")
-        return persona
-    except Exception as e:
-        print(f"Error al obtener la persona: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al obtener la persona: {str(e)}"
-        )
+    persona = serv_persona.leer(db, id_persona)
+    return persona
 
 
 @router.post("/",
@@ -69,46 +61,19 @@ def obtener_persona(id_persona: UUID, db: Session = Depends(leer_bd)):
              description="Registra una nueva persona en el sistema"
              )
 def crear_persona(persona: PersonaCreate, db: Session = Depends(leer_bd)):
-    try:
-        persona_creada = serv_persona.crear(db, persona.model_dump())
-        return persona_creada
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al crear la persona en la bd: {str(e)}"
-        )
-    except HTTPException as http_ex:
-        raise http_ex
-    except Exception as ex:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error inesperado al crear la persona: {str(ex)}"
-        )
+    persona_creada = serv_persona.crear(db, persona.model_dump())
+    return persona_creada
 
 
 @router.put("/{id_persona}",
             response_model=PersonaResponse,
             summary="Actualizar una Persona",
             description="Actualiza los datos de una persona registrada en el sistema")
-def actualizar_persona(id_persona: UUID, persona: PersonaCreate, db: Session = Depends(leer_bd)):
-    try:
-        persona_actualizada = serv_persona.actualizar(
-            db, id_persona, persona.model_dump())
-        return persona_actualizada
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al actualizar la persona en la bd: {str(e)}"
-        )
-    except HTTPException as http_ex:
-        raise http_ex
-    except Exception as ex:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error inesperado al actualizar la persona: {str(ex)}"
-        )
+def actualizar_persona(id_persona: UUID, persona: PersonaCreate,
+                       db: Session = Depends(leer_bd)):
+    persona_actualizada = serv_persona.actualizar(
+        db, id_persona, persona.model_dump())
+    return persona_actualizada
 
 
 @router.delete("/{id_persona}",
@@ -116,12 +81,8 @@ def actualizar_persona(id_persona: UUID, persona: PersonaCreate, db: Session = D
                summary="Eliminar una Persona",
                description="Elimina una persona registrada en el sistema")
 def eliminar_persona(id_persona: UUID, db: Session = Depends(leer_bd)):
-    if not serv_persona.eliminar(db, id_persona):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Persona no encontrada"
-        )
-    return True
+    resultado = serv_persona.eliminar(db, id_persona)
+    return resultado
 
 
 @router.delete("/fisico/{id_persona}",
@@ -130,11 +91,7 @@ def eliminar_persona(id_persona: UUID, db: Session = Depends(leer_bd)):
                description="Elimina fisicamente una persona registrada en el sistema"
                )
 def eliminar_persona_fisico(id_persona: UUID, db: Session = Depends(leer_bd)):
-    if not serv_persona.eliminar_fisico(db, id_persona):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Persona no encontrada"
-        )
-    return True
+    resultado = serv_persona.eliminar_fisico(db, id_persona)
+    return resultado
 #         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
 #         detail=f"Error al eliminar el objeto: {str(e)}")

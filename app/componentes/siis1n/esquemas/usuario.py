@@ -1,34 +1,49 @@
-from pydantic import BaseModel, UUID4, Field
+from pydantic import BaseModel, UUID4, Field, ConfigDict
 from typing import Optional, List
 
 
 class UsurioBase(BaseModel):
-    nombre_usuario: str = Field(..., example="rmendoza",
-                                title="Nombre de Usuario", description="Nombre de usuario")
+    model_config = ConfigDict(from_attributes=True)
+
+    nombre_usuario: str = Field(
+        ..., title="Nombre de Usuario",
+        description="Nombre de usuario",
+        json_schema_extra={"example": "rmendoza"})
 
 
 class UsuarioCreate(UsurioBase):
-    clave: str = Field(..., example="123456", title="Clave",
-                       description="Clave de acceso del usuario")
-    id_persona: UUID4 = Field(..., example="123e4567-e89b-12d3-a456-426614174000",
-                              title="Id Persona", description="Identificador unico de la persona")
-    id_rol: int = Field(..., example=1, title="Id Rol",
-                        description="Identificador unico del rol")
+    clave: str = Field(
+        ..., title="Clave",
+        description="Clave de acceso del usuario",
+        json_schema_extra={"example": "123456"})
+    id_persona: UUID4 = Field(
+        ..., title="Id Persona",
+        description="Identificador unico de la persona",
+        json_schema_extra={"example": "123e4567-e89b-12d3-a456-426614174000"})
+    id_rol: int = Field(
+        ..., title="Id Rol",
+        description="Identificador unico del rol",
+        json_schema_extra={"example": 1})
     id_empleado: Optional[int] = Field(
-        None, example=1, title="Id Empleado", description="Identificador unico del empleado")
+        None, title="Id Empleado",
+        description="Identificador unico del empleado",
+        json_schema_extra={"example": 1})
 
 
 class UsuarioResponse(UsurioBase):
-    id_usuario: int = Field(..., example=1, title="Id Usuario",
-                            description="Identificador unico del usuario")
-    id_persona: UUID4 = Field(..., example="123e4567-e89b-12d3-a456-426614174000",
-                              title="Id Persona", description="Identificador unico de la persona")
-
-    class Config:
-        from_atributes = True
+    id_usuario: int = Field(
+        ..., title="Id Usuario",
+        description="Identificador unico del usuario",
+        json_schema_extra={"example": 1})
+    id_persona: UUID4 = Field(
+        ..., title="Id Persona",
+        description="Identificador unico de la persona",
+        json_schema_extra={"example": "123e4567-e89b-12d3-a456-426614174000"})
 
 
 class RespuestaPaginada(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     total: int
     pagina: int
     tamanio: int
