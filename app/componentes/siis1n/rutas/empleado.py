@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends,  Query
+from fastapi import APIRouter, Depends,  Query, Request
 from sqlalchemy.orm import Session
 from app.componentes.siis1n.servicios.empleado import ServicioEmpleado
-from app.componentes.siis1n.esquemas.empleado import RespuestaPaginada, EmpleadoPersona, EmpleadoResponse
+from app.componentes.siis1n.esquemas.empleado import RespuestaPaginada, \
+    EmpleadoPersona, EmpleadoResponse
+from app.nucleo.seguridad import verificar_token
 from app.nucleo.baseDatos import leer_bd
 
 serv_empleado = ServicioEmpleado()
@@ -33,9 +35,18 @@ def obtener_empleado(id_empleado: int, db: Session = Depends(leer_bd)):
 @router.post("/", response_model=EmpleadoResponse,
              summary="Registrar un nuevo Empleado",
              description="Registra un nuevo empleado en el sistema")
-def crear_empleado(empleado_persona: EmpleadoPersona, db: Session = Depends(leer_bd)):
+def crear_empleado(
+        empleado_persona: EmpleadoPersona,
+        request: Request,
+        db: Session = Depends(leer_bd),
+        token: str = Depends(verificar_token)):
+    usuario = token["nombre_usuario"]
+    ip = request.client.host
     empleado = serv_empleado.crear_empleado_con_persona(
-        db, empleado_persona)
+        db,
+        empleado_persona.model_dump(),
+        usuario_reg=usuario,
+        ip_reg=ip)
     return empleado
 
 
@@ -52,7 +63,18 @@ def actualizar_empleado(id_empleado: int, empleado_persona: EmpleadoPersona,
 @router.delete("/{id_empleado}",
                response_model=bool,
                summary=f"Eliminar un empleado",
-               description=f"Elimina un empleado de forma logica registrado en el sistema")
-def eliminar_empleado(id_empleado: int, db: Session = Depends(leer_bd)):
-    resultado = serv_empleado.eliminar(db, id_empleado)
+               description=f"Elimina un empleado de forma logica\
+                  registrado en el sistema")
+def eliminar_empleado(
+        id_empleado: int,
+        request: Request,
+        db: Session = Depends(leer_bd),
+        token: str = Depends(verificar_token)):
+    usuario = token["nombre_usuario"]
+    ip = request.client.host
+    resultado = serv_empleado.eliminar(
+        db,
+        id=id_empleado,
+        usuario_reg=usuario,
+        ip_reg=ip)
     return resultado

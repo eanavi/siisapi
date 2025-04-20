@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends,  Query, Request
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError
 from app.componentes.siis1n.servicios.rol import ServicioRol
 from app.componentes.siis1n.esquemas.rol import RolResponse, RespuestaPaginada, RolCreate
+from app.nucleo.seguridad import verificar_token
 from app.nucleo.baseDatos import leer_bd
+
 
 serv_rol = ServicioRol()
 
@@ -38,8 +39,18 @@ def obtener_rol(id_rol: int, db: Session = Depends(leer_bd)):
              summary="Registrar un Rol",
              description="Registra un nuevo rol en el sistema"
              )
-def crear_rol(rol: RolCreate, db: Session = Depends(leer_bd)):
-    rol_creado = serv_rol.crear(db, rol.model_dump())
+def crear_rol(
+        rol: RolCreate,
+        request: Request,
+        db: Session = Depends(leer_bd),
+        token: str = Depends(verificar_token)):
+    usuario = token["nombre_usuario"]
+    ip = request.client.host
+    rol_creado = serv_rol.crear(
+        db=db,
+        obj=rol.model_dump(),
+        usuario_reg=usuario,
+        ip_reg=ip)
     return rol_creado
 
 
@@ -56,6 +67,16 @@ def actualizar_rol(id_rol: int, rol: RolCreate, bd: Session = Depends(leer_bd)):
                response_model=bool,
                summary="Eliminar un Rol",
                description="Elimina un rol registrado en el sistema")
-def eliminar_rol(id_rol: int, db: Session = Depends(leer_bd)):
-    resultado = serv_rol.eliminar(db, id_rol)
+def eliminar_rol(
+        id_rol: int,
+        request: Request,
+        db: Session = Depends(leer_bd),
+        token: str = Depends(verificar_token)):
+    usuario = token["nombre_usuario"]
+    ip = request.client.host
+    resultado = serv_rol.eliminar(
+        db=db,
+        id=id_rol,
+        usuario_reg=usuario,
+        ip_reg=ip)
     return resultado

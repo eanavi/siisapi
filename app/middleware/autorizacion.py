@@ -12,23 +12,31 @@ PERMISOS_ROLES = {
         "/personas": ["Administrador", "operador", "medico"],
         "/usuarios": ["Administrador", "operador"],
         "/consultas": ["Administrador", "operador", "medico"],
-        "/empleados": ["Administrador"]
+        "/empleados": ["Administrador"],
+        "/grupos": ["Administrador"],
+        "/listas": ["Administrador"]
     },
     "POST": {
         "/usuarios": ["Administrador"],
         "/consultas": ["medico"],
-        "/personas": ["Administrador"]  # Solo médicos pueden crear consultas
+        "/personas": ["Administrador"],  # Solo médicos pueden crear consultas
+        "/grupos": ["Administrador"],
+        "/listas": ["Administrador"]
     },
     "PUT": {
         "/usuarios": ["Administrador", "operador"],
         # Solo operador y admin pueden modificar personas
         "/personas": ["administrador", "operador"],
-        "/consultas": ["medico"]  # Solo médicos pueden modificar consultas
+        "/consultas": ["medico"],  # Solo médicos pueden modificar consultas
+        "/grupos": ["Administrador"],
+        "/listas": ["Administrador"]
     },
     "DELETE": {
         "/usuarios": ["Administrador"],
         # Solo administradores pueden eliminar consultas
-        "/consultas": ["Administrador"]
+        "/consultas": ["Administrador"],
+        "/grupos": ["Administrador"],
+        "/listas": ["Administraor"]
     }
 }
 

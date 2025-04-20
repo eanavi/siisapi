@@ -1,8 +1,8 @@
 from uuid import UUID
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.orm import Session
 from app.componentes.siis1n.servicios.persona import ServicioPersona
-from app.componentes.siis1n.esquemas.persona import RespuestaPaginada, PersonaResponse, PersonaCreate
+from app.componentes.siis1n.esquemas.persona import RespuestaPaginada, Paginacion, PersonaResponse, PersonaCreate
 from app.nucleo.seguridad import verificar_token
 from app.nucleo.baseDatos import leer_bd
 
@@ -29,7 +29,7 @@ def listar_personas(
 
 
 @router.get("/buscar/{criterio}",
-            response_model=RespuestaPaginada,
+            response_model=Paginacion,
             summary="Buscar un conjunto de Personas",
             description="Busca un conjunto de personas registradas en el \
                 sistema a partir del criterio de busqueda"
@@ -60,8 +60,19 @@ def obtener_persona(id_persona: UUID, db: Session = Depends(leer_bd)):
              summary="Registrar una Persona",
              description="Registra una nueva persona en el sistema"
              )
-def crear_persona(persona: PersonaCreate, db: Session = Depends(leer_bd)):
-    persona_creada = serv_persona.crear(db, persona.model_dump())
+def crear_persona(
+        persona: PersonaCreate,
+        request: Request,
+        db: Session = Depends(leer_bd),
+        token: str = Depends(verificar_token)):
+    usuario = token["nombre_usuario"]
+    ip = request.client.host
+    persona_creada = serv_persona.crear(
+        db=db,
+        obj=persona.model_dump(),
+        usuario_reg=usuario,
+        ip_reg=ip
+    )
     return persona_creada
 
 
@@ -80,8 +91,16 @@ def actualizar_persona(id_persona: UUID, persona: PersonaCreate,
                response_model=bool,
                summary="Eliminar una Persona",
                description="Elimina una persona registrada en el sistema")
-def eliminar_persona(id_persona: UUID, db: Session = Depends(leer_bd)):
-    resultado = serv_persona.eliminar(db, id_persona)
+def eliminar_persona(
+    id_persona: UUID,
+    request: Request,
+    db: Session = Depends(leer_bd),
+    token: str = Depends(verificar_token)
+):
+    usuario = token["nombre_usuario"]
+    ip = request.client.host
+    resultado = serv_persona.eliminar(
+        db, id=id_persona, usuario_reg=usuario, ip_reg=ip)
     return resultado
 
 

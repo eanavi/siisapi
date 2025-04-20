@@ -1,0 +1,35 @@
+---------
+Login
+---------
+
+$body = @{
+    username = "eanavi"
+    password = "vicho.1368"
+}
+
+$response = Invoke-WebRequest -Uri "http://localhost:8000/auth/login" -Method Post -ContentType "application/x-www-form-urlencoded" -Body $body
+$token = ($response.Content | ConvertFrom-Json).access_token
+
+-------------
+crear persona
+-------------
+
+@headers = @{
+    Authorization = "Bearer $token"
+}
+
+$persona = @{
+    tipo = "E",
+    ci = "8745211",
+    paterno = "Llanos",
+    materno = "Carega",
+    nombres = "Jaime Miguel",
+    fecha_nacimiento = "2020-07-02",
+    sexo = "M",
+    direccion = @(@{tipo = "personal", direccion = @{zona = "Santa Rita", calle = "Estados Unidos", numero = "5412", ciudad = "La Paz"}}),
+    telefono = @{celular = "8544211"},
+    correo = @{ personal = "jllanos@gmail.com"}
+}
+
+Invoke-RestMethod -Uri "http://127.0.0.1:8000/personas/" -Method Post -ContentType "application/json" -Headers $headers -Body ($persona | ConvertTo-Json -Depth 3)
+

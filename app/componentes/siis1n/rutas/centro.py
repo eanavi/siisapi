@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from app.componentes.siis1n.servicios.centro import ServicioCentro
 from app.componentes.siis1n.esquemas.centro import CentroPaginado, CentroCreate, CentroResponse
 from app.nucleo.baseDatos import leer_bd
+from app.nucleo.seguridad import verificar_token
+
 
 serv_centro = ServicioCentro()
 
@@ -36,8 +38,17 @@ def obtener_centro(id_centro: int, db: Session = Depends(leer_bd)):
 @router.post("/", response_model=CentroResponse,
              summary="Registrar un nuevo Centro de Salud",
              description="Registra un nuevo Centro de Salud en el Sistema")
-def crear_centro_salud(centro_salud: CentroCreate, db: Session = Depends(leer_bd)):
-    centro = serv_centro.crear(db, centro_salud)
+def crear_centro_salud(
+        centro_salud: CentroCreate,
+        request: Request,
+        db: Session = Depends(leer_bd),
+        token: str = Depends(verificar_token)):
+    usuario = token["nombre_usuario"]
+    ip = request.client.host
+    centro = serv_centro.crear(
+        db, centro_salud.model_dump(),
+        usuario_reg=usuario,
+        ip_reg=ip)
     return centro
 
 
@@ -58,6 +69,16 @@ def actualizar_centro(id_centro: int, centro: CentroCreate, db: Session = Depend
                summary=f"Eliminar un Centro de Salud",
                description=f"Elimina un centro de salud registrado en el sistema"
                )
-def eliminar_centro(id_centro: int, db: Session = Depends(leer_bd)):
-    resultado = serv_centro.eliminar(db, id_centro)
+def eliminar_centro(
+        id_centro: int,
+        request: Request,
+        db: Session = Depends(leer_bd),
+        token: str = Depends(verificar_token)):
+    usuario = token["nombre_usuario"]
+    ip = request.client.host
+    resultado = serv_centro.eliminar(
+        db,
+        id=id_centro,
+        usuario_reg=usuario,
+        ip_reg=ip)
     return resultado

@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError
 from app.componentes.siis1n.servicios.usuario import ServicioUsuario
 from app.componentes.siis1n.esquemas.usuario import RespuestaPaginada, UsuarioCreate, UsuarioResponse
+from app.nucleo.seguridad import verificar_token
 from app.nucleo.baseDatos import leer_bd
 
 serv_usuario = ServicioUsuario()
@@ -29,3 +29,45 @@ def listar_usuarios(
 def obtner_usuario(id_usuario: int, db: Session = Depends(leer_bd)):
     usuario = serv_usuario.leer(db, id_usuario)
     return usuario
+
+
+@router.post("/",
+             response_model=UsuarioResponse,
+             summary="Registrar un Usuario",
+             description="Registra un nuevo usuario en el sistema"
+             )
+def crear_usuario(
+        usuario: UsuarioCreate,
+        request: Request,
+        db: Session = Depends(leer_bd),
+        token: str = Depends(verificar_token)):
+    usuario_reg = token["nombre_usuario"]
+    ip = request.client.host
+    usuario_creado = serv_usuario.crear(
+        db=db,
+        obj=usuario.model_dump(),
+        usuario_reg=usuario_reg,
+        ip_reg=ip
+    )
+    return usuario_creado
+
+
+@router.delete("/{id_usuario}",
+               response_model=UsuarioResponse,
+               summary="Eliminar un Usuario",
+               description="Elimina un usuario del sistema"
+               )
+def eliminar_usuario(
+        id_usuario: int,
+        request: Request,
+        db: Session = Depends(leer_bd),
+        token: str = Depends(verificar_token)):
+    usuario_reg = token["nombre_usuario"]
+    ip = request.client.host
+    usuario_eliminado = serv_usuario.eliminar(
+        db=db,
+        id=id_usuario,
+        usuario_reg=usuario_reg,
+        ip_reg=ip
+    )
+    return usuario_eliminado

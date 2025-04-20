@@ -1,18 +1,24 @@
-from sqlalchemy import Column, Integer, String, Date
-from sqlalchemy.orm import relationship
-from app.componentes.siis1n.modelos.base import ModeloBase
+from sqlalchemy import Integer, String
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+from typing import Optional, List, TYPE_CHECKING
+from .base import ModeloBase
+
+
+if TYPE_CHECKING:
+    from .empleado import Empleado
 
 
 class Centro(ModeloBase):
-    __tablename__ = 'centro'
+    __tablename__ = "centro"
 
-    id_centro = Column(Integer, primary_key=True,
-                       autoincrement=True, index=True)
-    codigo_snis = Column(Integer, nullable=False, unique=True)
-    nombre = Column(String(120), nullable=False)
-    direccion = Column(String(120), nullable=True)
-    usuario = Column(String(20), nullable=False)
-    clave = Column(String(255), nullable=False)
-    puerto = Column(Integer, nullable=False)
+    id_centro: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=True, index=True)
+    codigo_snis: Mapped[int] = mapped_column(
+        Integer, nullable=False, unique=True)
+    nombre: Mapped[str] = mapped_column(String(120), nullable=False)
+    direccion: Mapped[Optional[str]] = mapped_column(String(120))
+    usuario: Mapped[str] = mapped_column(String(20), nullable=False)
+    clave: Mapped[str] = mapped_column(String(255), nullable=False)
+    puerto: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    empleados = relationship("Empleado", back_populates="centro")
+    empleados: Mapped[List["Empleado"]] = relationship(back_populates="centro")
