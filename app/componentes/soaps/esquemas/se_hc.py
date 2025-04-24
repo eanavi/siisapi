@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 
-class SE_HC(BaseModel):
+class Se_Hc(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     Emp_Codigo: int = Field(..., title="Código del Empresa")
@@ -75,3 +75,12 @@ class SE_HC(BaseModel):
     hcl_NroEmbarazo: Optional[int] = Field(None, title="Número de Embarazo")
     codestabl: Optional[str] = Field(
         None, max_length=50, title="Código Establecimiento")
+
+
+class RespuestaPaginada(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    total: int
+    pagina: int
+    tamanio: int
+    items: list[Se_Hc]

@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request, Depends
 from app.nucleo.baseDatos import leer_bd, init_bd
 from app.componentes.siis1n.rutas import router as siis1n_router
+from app.componentes.soaps.rutas import router as soaps_router
 from app.middleware.autorizacion import AuthMiddleware
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session
@@ -30,6 +31,7 @@ app = FastAPI(
 app.add_middleware(AuthMiddleware)
 
 app.include_router(siis1n_router)
+app.include_router(soaps_router)
 
 
 @app.get("/test-bd")

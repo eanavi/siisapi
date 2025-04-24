@@ -14,7 +14,8 @@ PERMISOS_ROLES = {
         "/consultas": ["Administrador", "operador", "medico"],
         "/empleados": ["Administrador"],
         "/grupos": ["Administrador"],
-        "/listas": ["Administrador"]
+        "/listas": ["Administrador"],
+        "/soaps": ["Administrador"]
     },
     "POST": {
         "/usuarios": ["Administrador"],

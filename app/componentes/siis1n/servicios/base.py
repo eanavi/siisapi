@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy.orm import Session, DeclarativeBase
-from typing import List, Type, TypeVar, Generic, Union, Optional
+from typing import List, TypeVar, Generic, Union, Optional
 from uuid import UUID
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException, status
@@ -58,8 +58,7 @@ class ServicioBase(Generic[T]):
     def leer_todos(self, db: Session, pagina: int = 1, tamanio: int = 10) -> List[T]:
         try:
             db_objs = db.query(self.modelo).filter(
-                self.modelo.
-                estado_reg == 'V'
+                self.modelo.estado_reg == 'V'
             ).all()
             return paginacion(db_objs, pagina, tamanio)
         except SQLAlchemyError as e:

@@ -6,7 +6,7 @@ class Base(DeclarativeBase):
     pass
 
 
-class SE_HC(Base):
+class Se_hc(Base):
     __tablename__ = 'SE_HC'
 
     Emp_Codigo = Column(Integer, nullable=False)
