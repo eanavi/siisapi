@@ -48,10 +48,10 @@ class EmpleadoPersona(PersonaBase):
         None, title="Registro Profesional",
         description="Registro profesional del empleado",
         json_schema_extra={"example": "123456"})
-    id_centro: int = Field(
-        ..., title="Id Centro",
-        description="Identificador unico del centro",
-        json_schema_extra={"example": 1})
+#    id_centro: int = Field(
+#        ..., title="Id Centro",
+#        description="Identificador unico del centro",
+#        json_schema_extra={"example": 1})
     cargo: Optional[str] = Field(
         None, title="Cargo",
         description="Cargo del empleado",

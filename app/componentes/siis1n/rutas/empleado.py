@@ -4,6 +4,7 @@ from app.componentes.siis1n.servicios.empleado import ServicioEmpleado
 from app.componentes.siis1n.esquemas.empleado import RespuestaPaginada, \
     EmpleadoPersona, EmpleadoResponse
 from app.nucleo.seguridad import verificar_token
+from app.nucleo.conexion import obtener_id_centro
 from app.nucleo.baseDatos import leer_bd
 
 serv_empleado = ServicioEmpleado()
@@ -39,12 +40,14 @@ def crear_empleado(
         empleado_persona: EmpleadoPersona,
         request: Request,
         db: Session = Depends(leer_bd),
-        token: str = Depends(verificar_token)):
+        token: str = Depends(verificar_token),
+        id_centro: int = Depends(obtener_id_centro)):
     usuario = token["nombre_usuario"]
     ip = request.client.host
     empleado = serv_empleado.crear_empleado_con_persona(
         db,
         empleado_persona.model_dump(),
+        id_centro=id_centro,
         usuario_reg=usuario,
         ip_reg=ip)
     return empleado

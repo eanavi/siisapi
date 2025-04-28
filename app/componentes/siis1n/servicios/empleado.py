@@ -2,7 +2,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from app.componentes.siis1n.esquemas.empleado import EmpleadoPersona
 from app.componentes.siis1n.servicios.persona import ServicioPersona
+from app.componentes.siis1n.modelos.base import ParametroBase, ModeloBase
 from fastapi import HTTPException, status
+from typing import Optional
 from .base import ServicioBase
 from ..modelos.empleado import Empleado
 
@@ -11,23 +13,35 @@ class ServicioEmpleado(ServicioBase):
     def __init__(self):
         super().__init__(Empleado, 'id_empleado')
 
-    def crear_empleado_con_persona(self, db: Session, empleado_persona: EmpleadoPersona) -> Empleado:
+    def crear_empleado_con_persona(
+            self,
+            db: Session,
+            empleado_persona: EmpleadoPersona,
+            id_centro: int,
+            usuario_reg: Optional[str] = None,
+            ip_reg: Optional[str] = None
+    ) -> Empleado:
         try:
+            if isinstance(empleado_persona, dict):
+                empleado_persona = EmpleadoPersona(**empleado_persona)
+
             datos_persona = empleado_persona.model_dump(
                 exclude={"tipo_empleado", "profesion", "registro_profesional", "id_centro", "cargo"})
             # Crear la persona
-            nueva_persona = ServicioPersona().crear(db, datos_persona)
+
+            nueva_persona = ServicioPersona().crear(db, datos_persona, usuario_reg, ip_reg)
 
             # Crear el empleado
             datos_empleados = {
                 "id_persona": nueva_persona.id_persona,
-                "id_centro": empleado_persona.id_centro,
+                "id_centro": id_centro,
                 "tipo_empleado": empleado_persona.tipo_empleado,
                 "profesion": empleado_persona.profesion,
                 "registro_profesional": empleado_persona.registro_profesional,
                 "cargo": empleado_persona.cargo,
             }
-            nuevo_empleado = self.crear(db, datos_empleados)
+            nuevo_empleado = self.crear(
+                db, datos_empleados, usuario_reg, ip_reg)
             return nuevo_empleado
         except SQLAlchemyError as e:
             db.rollback()

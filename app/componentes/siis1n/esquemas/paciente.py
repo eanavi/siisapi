@@ -53,10 +53,52 @@ class PacienteBase(BaseModel):
 
 
 class PacientePersona(PersonaBase):
-    pass
+    model_config = ConfigDict(from_attributes=True)
+
+#    id_centro: int = Field(
+#        ..., title="Id Centro",
+#        description="Identificador unico del centro",
+#        json_schema_extra={"example": 1})
+    estado_civil: str = Field(
+        ..., title="Estado Civil",
+        description="Estado civil del paciente",
+        json_schema_extra={"example": "SO"})
+    ocupacion: Optional[int] = Field(
+        None, title="Ocupacion",
+        description="Ocupacion del paciente",
+        json_schema_extra={"example": 1})
+    nivel_estudios: Optional[int] = Field(
+        None, title="Nivel de Estudios",
+        description="Nivel de estudios del paciente",
+        json_schema_extra={"example": 1})
+    mun_nacimiento: int = Field(
+        ..., title="Municipio de Nacimiento",
+        description="Municipio de nacimiento del paciente",
+        json_schema_extra={"example": 1})
+    mun_residencia: int = Field(
+        ..., title="Municipio de Residencia",
+        description="Municipio de residencia del paciente",
+        json_schema_extra={"example": 1})
+    idioma_hablado: int = Field(
+        ..., title="Idioma Hablado",
+        description="Idioma hablado por el paciente",
+        json_schema_extra={"example": 1})
+    idioma_materno: int = Field(
+        ..., title="Idioma Materno",
+        description="Idioma materno del paciente",
+        json_schema_extra={"example": 1})
+    autopertenencia: int = Field(
+        ..., title="Autopertenencia",
+        description="Autopertenencia del paciente",
+        json_schema_extra={"example": 1})
+    gestion_comunitaria: Optional[str] = Field(
+        None, title="Gestion Comunitaria",
+        description="Gestion comunitaria del paciente",
+        json_schema_extra={"example": "Gestion comunitaria"})
 
 
-class PacienteResponse(PacienteBase):
+class PacienteResponse(PacientePersona):
+    model_config = ConfigDict(from_attributes=True)
 
     id_paciente: int = Field(
         ..., title="Id Paciente",

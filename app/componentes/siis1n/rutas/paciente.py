@@ -4,6 +4,7 @@ from app.componentes.siis1n.servicios.paciente import ServicioPaciente
 from app.componentes.siis1n.esquemas.paciente import RespuestaPaginada, \
     PacientePersona, PacienteResponse
 from app.nucleo.seguridad import verificar_token
+from app.nucleo.conexion import obtener_id_centro
 from app.nucleo.baseDatos import leer_bd
 
 serv_paciente = ServicioPaciente()
@@ -32,22 +33,25 @@ def obtener_paciente(id_paciente: int, db: Session = Depends(leer_bd)):
     return paciente
 
 
-@router.post("/", response_model=PacienteResponse,
+@router.post("/", response_model=int,
              summary="Registrar un nuevo Paciente",
              description="Registra un nuevo paciente en el sistema")
 def crear_paciente(
         paciente_persona: PacientePersona,
         request: Request,
         db: Session = Depends(leer_bd),
-        token: str = Depends(verificar_token)):
-    usuario = token["nombre_usuario"]
+        token: str = Depends(verificar_token),
+        id_centro: int = Depends(obtener_id_centro)):
     ip = request.client.host
+    usuario = token["nombre_usuario"]
     paciente = serv_paciente.crear_paciente_con_persona(
         db,
         paciente_persona.model_dump(),
+        id_centro=id_centro,
         usuario_reg=usuario,
-        ip_reg=ip)
-    return paciente
+        ip_reg=ip
+    )
+    return paciente.id_paciente
 
 
 @router.put("/{id_paciente}", response_model=PacientePersona,

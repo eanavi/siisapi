@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 
 class Se_Hc(BaseModel):
@@ -83,4 +83,4 @@ class RespuestaPaginada(BaseModel):
     total: int
     pagina: int
     tamanio: int
-    items: list[Se_Hc]
+    items: List[Se_Hc]

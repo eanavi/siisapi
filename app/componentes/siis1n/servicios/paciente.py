@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.componentes.siis1n.esquemas.paciente import PacientePersona
 from app.componentes.siis1n.servicios.persona import ServicioPersona
 from fastapi import HTTPException, status
+from typing import Optional
 from .base import ServicioBase
 from ..modelos.paciente import Paciente
 
@@ -14,8 +15,15 @@ class ServicioPaciente(ServicioBase):
     def crear_paciente_con_persona(
             self,
             db: Session,
-            paciente_persona: PacientePersona) -> Paciente:
+            paciente_persona: PacientePersona,
+            id_centro: int,
+            usuario_reg: Optional[str] = None,
+            ip_reg: Optional[str] = None
+    ) -> Paciente:
         try:
+            if isinstance(paciente_persona, dict):
+                paciente_persona = PacientePersona(**paciente_persona)
+
             datos_persona = paciente_persona.model_dump(
                 exclude={"id_persona", "id_centro",
                          "estado_civil", "ocupacion",
@@ -24,12 +32,12 @@ class ServicioPaciente(ServicioBase):
                          "autopertenencia", "gestion_comunitaria"})
             # Crear la persona
             datos_persona["tipo"] = "P"  # Paciente
-            nueva_persona = ServicioPersona().crear(db, datos_persona)
+            nueva_persona = ServicioPersona().crear(db, datos_persona, usuario_reg, ip_reg)
 
             # Crear el paciente
             datos_paciente = {
                 "id_persona": nueva_persona.id_persona,
-                "id_centro": paciente_persona.id_centro,
+                "id_centro": id_centro,
                 "estado_civil": paciente_persona.estado_civil,
                 "ocupacion": paciente_persona.ocupacion,
                 "nivel_estudios": paciente_persona.nivel_estudios,
@@ -40,7 +48,8 @@ class ServicioPaciente(ServicioBase):
                 "autopertenencia": paciente_persona.autopertenencia,
                 "gestion_comunitaria": paciente_persona.gestion_comunitaria,
             }
-            nuevo_paciente = self.crear(db, datos_paciente)
+            nuevo_paciente = self.crear(
+                db, datos_paciente, usuario_reg, ip_reg)
             return nuevo_paciente
         except SQLAlchemyError as e:
             db.rollback()

@@ -13,7 +13,7 @@ class ServicioUsuario(ServicioBase):
 
     def autenticar(self, db: Session, nombre_usuario: str, clave: str):
         """ Autenticar al usuario verificando credenciales """
-        consulta = db.execute(text(f""" select nombre_usuario, clave, centro_salud, 
+        consulta = db.execute(text(f""" select nombre_usuario, clave, centro_salud, id_centro,
                                      usuario, clave_centro, direccion, puerto, nombre_rol 
                                      from fn_usuario(:criterio)
                                      """), {'criterio': nombre_usuario})
@@ -30,7 +30,10 @@ class ServicioUsuario(ServicioBase):
             "base_datos": "BDEstadistica",
             "usuario": usuario.usuario,
             "clave": usuario.clave_centro,
-            "puerto": usuario.puerto
+            "puerto": usuario.puerto,
+            "centro_salud": usuario.centro_salud,
+            "id_centro": usuario.id_centro,
+            "nombre_rol": usuario.nombre_rol
         })
 
         return token
