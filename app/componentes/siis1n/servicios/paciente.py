@@ -26,7 +26,7 @@ class ServicioPaciente(ServicioBase):
 
             datos_persona = paciente_persona.model_dump(
                 exclude={"id_persona", "id_centro",
-                         "estado_civil", "ocupacion",
+                         "estado_civil", "ocupacion", "tipo_sangre",
                          "nivel_estudios", "mun_nacimiento",
                          "mun_residencia", "idioma_hablado", "idioma_materno",
                          "autopertenencia", "gestion_comunitaria"})
@@ -39,6 +39,7 @@ class ServicioPaciente(ServicioBase):
                 "id_persona": nueva_persona.id_persona,
                 "id_centro": id_centro,
                 "estado_civil": paciente_persona.estado_civil,
+                "tipo_sangre": paciente_persona.tipo_sangre,
                 "ocupacion": paciente_persona.ocupacion,
                 "nivel_estudios": paciente_persona.nivel_estudios,
                 "mun_nacimiento": paciente_persona.mun_nacimiento,
@@ -76,6 +77,7 @@ class ServicioPaciente(ServicioBase):
                 "id_persona": paciente.id_persona,
                 "id_centro": paciente.id_centro,
                 "estado_civil": paciente.estado_civil,
+                "tipo_sangre": paciente.tipo_sangre,
                 "ocupacion": paciente.ocupacion,
                 "nivel_estudios": paciente.nivel_estudios,
                 "mun_nacimiento": paciente.mun_nacimiento,
@@ -127,6 +129,7 @@ class ServicioPaciente(ServicioBase):
             datos_paciente = {
                 "id_centro": paciente_persona.id_centro,
                 "estado_civil": paciente_persona.estado_civil,
+                "tipo_sangre": paciente_persona.tipo_sangre,
                 "ocupacion": paciente_persona.ocupacion,
                 "nivel_estudios": paciente_persona.nivel_estudios,
                 "mun_nacimiento": paciente_persona.mun_nacimiento,

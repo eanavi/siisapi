@@ -18,6 +18,10 @@ class PacienteBase(BaseModel):
         ..., title="Estado Civil",
         description="Estado civil del paciente",
         json_schema_extra={"example": "SO"})
+    tipo_sangre: Optional[str] = Field(
+        None, title="Tipo de Sangre",
+        description="Tipo de sangre del paciente",
+        json_schema_extra={"example": "O+"})
     ocupacion: Optional[int] = Field(
         None, title="Ocupacion",
         description="Ocupacion del paciente",
@@ -63,6 +67,10 @@ class PacientePersona(PersonaBase):
         ..., title="Estado Civil",
         description="Estado civil del paciente",
         json_schema_extra={"example": "SO"})
+    tipo_sangre: Optional[str] = Field(
+        None, title="Tipo de Sangre",
+        description="Tipo de sangre del paciente",
+        json_schema_extra={"example": "O+"})
     ocupacion: Optional[int] = Field(
         None, title="Ocupacion",
         description="Ocupacion del paciente",

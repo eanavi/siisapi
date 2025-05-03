@@ -14,12 +14,11 @@ $token = ($response.Content | ConvertFrom-Json).access_token
 crear persona
 -------------
 
-@headers = @{
+$headers = @{
     Authorization = "Bearer $token"
 }
 
-$persona = @{
-    tipo = "E",
+$persona = '{tipo :"E",
     ci = "8745211",
     paterno = "Llanos",
     materno = "Carega",

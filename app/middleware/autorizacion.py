@@ -17,6 +17,7 @@ PERMISOS_ROLES = {
         "/listas": ["Administrador"],
         "/soaps": ["Administrador"],
         "/pacientes": ["Administrador", "operador", "medico"],
+        "/prestaciones": ["Administrador", "operador", "medico"],
 
     },
     "POST": {
@@ -27,6 +28,7 @@ PERMISOS_ROLES = {
         "/empleados": ["Administrador"],
         "/listas": ["Administrador"],
         "/pacientes": ["Administrador"],
+        "/prestaciones": ["Administrador", "operador", "medico"],
     },
     "PUT": {
         "/usuarios": ["Administrador", "operador"],
@@ -37,6 +39,7 @@ PERMISOS_ROLES = {
         "/empleados": ["Administrador"],
         "/listas": ["Administrador"],
         "/pacientes": ["Administrador", "operador", "medico"],
+        "/prestaciones": ["Administrador", "operador", "medico"],
     },
     "DELETE": {
         "/usuarios": ["Administrador"],
@@ -44,7 +47,8 @@ PERMISOS_ROLES = {
         "/consultas": ["Administrador"],
         "/empleados": ["Administrador"],
         "/grupos": ["Administrador"],
-        "/listas": ["Administraor"]
+        "/listas": ["Administraor"],
+        "/pacientes": ["Administrador"],
     }
 }
 
@@ -113,4 +117,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 content={"detail": "Token inválido"}
             )
 
-        return await call_next(request)
+        try:
+            return await call_next(request)
+        except Exception as e:
+            return JSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={"detail": "Error interno del servidor"}
+            )

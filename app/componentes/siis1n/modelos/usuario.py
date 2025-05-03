@@ -1,8 +1,6 @@
 from sqlalchemy import Integer, String, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 from .base import ModeloBase
-from .empleado import Empleado
-from .rol import Rol
 
 
 class Usuario(ModeloBase):
@@ -17,6 +15,3 @@ class Usuario(ModeloBase):
     nombre_usuario: Mapped[str] = mapped_column(
         String(20), nullable=False, unique=True, index=True)
     clave: Mapped[str] = mapped_column(String(255), nullable=False)
-
-    empleado: Mapped["Empleado"] = relationship(back_populates="usuarios")
-    rol: Mapped["Rol"] = relationship(back_populates="usuarios")

@@ -7,6 +7,7 @@ from . import auth
 from . import paciente
 from . import grupo
 from . import lista
+from . import prestacion
 
 router = APIRouter()
 
@@ -18,3 +19,4 @@ router.include_router(auth.router)
 router.include_router(paciente.router)
 router.include_router(grupo.router)
 router.include_router(lista.router)
+router.include_router(prestacion.router)

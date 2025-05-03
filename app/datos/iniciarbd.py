@@ -1,3 +1,4 @@
+import pdb
 from app.componentes.siis1n.modelos.lista import Lista
 from app.componentes.siis1n.modelos.grupo import Grupo
 from app.componentes.siis1n.modelos.rol import Rol
@@ -11,6 +12,7 @@ from app.nucleo.seguridad import generar_clave_encriptata
 from app.nucleo.baseDatos import leer_bd
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import text
 from datetime import date, datetime
 import uuid
 import sys
@@ -25,6 +27,101 @@ engine = create_engine(
     pool_timeout=config.tiempo_expiracion,
     pool_recycle=config.pool_tiempo_espera,
 )
+
+
+def preparar_bd():
+    db = next(leer_bd())
+    consulta = f"""
+    CREATE TYPE public.edad AS (
+	anio int4,
+	mes int4,
+	dia int4);
+
+    CREATE OR REPLACE FUNCTION public.calcular_edad_pg(fecha_nacimiento date)
+    RETURNS edad
+    LANGUAGE plpgsql
+    AS $function$
+    DECLARE
+        fecha_actual DATE := CURRENT_DATE;
+        anios INTEGER;
+        meses INTEGER;
+        dias INTEGER;
+    BEGIN
+        anios := EXTRACT(YEAR FROM fecha_actual) - EXTRACT(YEAR FROM fecha_nacimiento);
+        meses := EXTRACT(MONTH FROM fecha_actual) - EXTRACT(MONTH FROM fecha_nacimiento);
+        dias := EXTRACT(DAY FROM fecha_actual) - EXTRACT(DAY FROM fecha_nacimiento);
+
+        IF meses < 0 OR (meses = 0 AND dias < 0) THEN
+            anios := anios - 1;
+            meses := meses + 12;
+            IF dias < 0 THEN
+                meses := meses - 1;
+                -- Calcular los días en el mes anterior de la fecha de nacimiento
+                dias := dias + (DATE_TRUNC('day', fecha_actual - INTERVAL '1 month') + INTERVAL '1 month' - DATE_TRUNC('day', fecha_actual - INTERVAL '1 month'))::INTEGER;
+                IF meses < 0 THEN
+                    meses := 11;
+                    anios := anios - 1;
+                END IF;
+            END IF;
+        END IF;
+
+        RETURN ROW(anios, meses, dias)::edad;
+    END;
+    $function$
+    ;
+
+
+    CREATE OR REPLACE FUNCTION public.es_dia_valido(anio integer, mes integer, dia integer)
+    RETURNS boolean
+    LANGUAGE plpgsql
+    IMMUTABLE
+    AS $function$
+    DECLARE
+        max_dias INTEGER;
+    BEGIN
+        IF mes < 1 OR mes > 12 OR dia < 1 THEN
+            RETURN FALSE;
+        END IF;
+
+        CASE mes
+            WHEN 2 THEN
+                IF (anio % 4 = 0 AND anio % 100 <> 0) OR anio % 400 = 0 THEN
+                    max_dias := 29;
+                ELSE
+                    max_dias := 28;
+                END IF;
+            WHEN 4, 6, 9, 11 THEN
+                max_dias := 30;
+            ELSE
+                max_dias := 31;
+        END CASE;
+
+        RETURN dia <= max_dias;
+    END;
+    $function$
+    ;
+    """
+    db.execute(text(consulta))
+    db.commit()
+    db.close()
+
+
+def inicia_tablas():
+    db = next(leer_bd())
+    consulta = f""" 
+    INSERT INTO public.prestacion (id_centro,nombre,sigla,edad_maxima,edad_minima,genero,tipo_prestador,tiempo_maximo,estado_reg,usuario_reg,ip_reg,fecha_reg) VALUES
+        (1,'Consulta Externa','CE','(120,0,0)','(5,0,0)','A','M',15,'V','eanavi','127.0.0.1','2025-04-29 00:00:00'),
+        (1,'Atención al Niño Sano','NS','(5,12,31)','(0,0,0)','A','M',15,'V','eanavi','127.0.0.1','2025-04-29 00:00:00'),
+        (1,'Anticoncepción','AC','(120,0,0)','(5,0,0)','A','M',15,'V','eanavi','127.0.0.1','2025-04-29 00:00:00'),
+        (1,'Odontología','OD','(120,0,0)','(0,0,0)','A','O',20,'V','eanavi','127.0.0.1','2025-04-29 00:00:00'),
+        (1,'Control Prenatal','CP','(65,0,0)','(16,0,0)','F','M',20,'V','eanavi','127.0.0.1','2025-04-29 00:00:00'),
+        (1,'Seguimiento Internaciones','SI','(120,0,0)','(0,0,0)','A','M',10,'V','eanavi','127.0.0.1','2025-04-29 00:00:00'),
+        (1,'Vacunas','VC','(120,0,0)','(0,0,0)','A','E',5,'V','eanavi','127.0.0.1','2025-04-29 00:00:00'),
+        (1,'Certificado de Defunción','CD','(120,0,0)','(0,0,0)','A','M',10,'V','eanavi','127.0.0.1','2025-04-29 00:00:00');
+    """
+    db.execute(text(consulta))
+    db.commit()
+    db.close()
 
 
 def inicio_bd():
@@ -153,4 +250,6 @@ def inicio_bd():
 
 
 if __name__ == "__main__":
+    preparar_bd()
     inicio_bd()
+    inicia_tablas()

@@ -1,14 +1,8 @@
 from sqlalchemy import ForeignKey, Integer, CHAR, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
-from typing import Optional, List, TYPE_CHECKING
+from typing import Optional
 from .base import ModeloBase
-
-
-if TYPE_CHECKING:
-    from .persona import Persona
-    from .centro import Centro
-    from .usuario import Usuario
 
 
 class Empleado(ModeloBase):
@@ -25,7 +19,3 @@ class Empleado(ModeloBase):
     profesion: Mapped[int] = mapped_column(Integer, nullable=False)
     registro_profesional: Mapped[Optional[str]] = mapped_column(String(20))
     cargo: Mapped[str] = mapped_column(String(120), nullable=False)
-
-    persona: Mapped["Persona"] = relationship()  # Relación unidireccional
-    centro: Mapped["Centro"] = relationship(back_populates="empleados")
-    usuarios: Mapped[List["Usuario"]] = relationship(back_populates="empleado")

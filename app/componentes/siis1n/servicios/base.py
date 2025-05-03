@@ -6,6 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException, status
 from app.componentes.siis1n.modelos.base import ModeloBase, ParametroBase
 from app.utiles.paginacion import paginacion
+from sqlalchemy.orm import joinedload
 
 T = TypeVar("T", bound=DeclarativeBase)
 
@@ -55,11 +56,28 @@ class ServicioBase(Generic[T]):
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                 detail=f"Error al leer el objeto: {str(e)}")
 
-    def leer_todos(self, db: Session, pagina: int = 1, tamanio: int = 10) -> List[T]:
+    def leer_todos(
+            self,
+            db: Session,
+            pagina: int = 1,
+            tamanio: int = 10,
+            filtros: Optional[dict] = None,
+            relaciones: Optional[List[str]] = None
+    ) -> List[T]:
         try:
-            db_objs = db.query(self.modelo).filter(
-                self.modelo.estado_reg == 'V'
-            ).all()
+            query = db.query(self.modelo).filter(self.modelo.estado_reg == 'V')
+
+            # Aplicar filtros personalizados
+            if filtros:
+                for campo, valor in filtros.items():
+                    query = query.filter(getattr(self.modelo, campo) == valor)
+
+            # Cargar relaciones opcionales
+            if relaciones:
+                for relacion in relaciones:
+                    query = query.options(joinedload(relacion))
+
+            db_objs = query.all()
             return paginacion(db_objs, pagina, tamanio)
         except SQLAlchemyError as e:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

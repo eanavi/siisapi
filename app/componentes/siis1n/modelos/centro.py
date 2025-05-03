@@ -1,11 +1,7 @@
 from sqlalchemy import Integer, String
-from sqlalchemy.orm import relationship, Mapped, mapped_column
-from typing import Optional, List, TYPE_CHECKING
+from sqlalchemy.orm import Mapped, mapped_column
+from typing import Optional
 from .base import ModeloBase
-
-
-if TYPE_CHECKING:
-    from .empleado import Empleado
 
 
 class Centro(ModeloBase):
@@ -20,5 +16,3 @@ class Centro(ModeloBase):
     usuario: Mapped[str] = mapped_column(String(20), nullable=False)
     clave: Mapped[str] = mapped_column(String(255), nullable=False)
     puerto: Mapped[int] = mapped_column(Integer, nullable=False)
-
-    empleados: Mapped[List["Empleado"]] = relationship(back_populates="centro")

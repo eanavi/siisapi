@@ -1,12 +1,7 @@
 from sqlalchemy import Integer, CHAR, String, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import Integer, String, CHAR
-from typing import TYPE_CHECKING
 from .base import ParametroBase
-
-
-if TYPE_CHECKING:
-    from .grupo import Grupo
 
 
 class Lista(ParametroBase):
@@ -20,5 +15,3 @@ class Lista(ParametroBase):
     cod_numero: Mapped[int] = mapped_column(Integer, nullable=False)
     descripcion: Mapped[str] = mapped_column(String(120), nullable=False)
     orden: Mapped[int] = mapped_column(Integer, nullable=False)
-
-    grupo: Mapped["Grupo"] = relationship(back_populates="lista")
