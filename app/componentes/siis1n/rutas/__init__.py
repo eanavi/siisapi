@@ -8,6 +8,9 @@ from . import paciente
 from . import grupo
 from . import lista
 from . import prestacion
+from . import turno
+from . import reserva
+from . import variables
 
 router = APIRouter()
 
@@ -20,3 +23,6 @@ router.include_router(paciente.router)
 router.include_router(grupo.router)
 router.include_router(lista.router)
 router.include_router(prestacion.router)
+router.include_router(turno.router)
+router.include_router(reserva.router)
+router.include_router(variables.router)

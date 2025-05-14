@@ -13,7 +13,7 @@ class Prestacion(ModeloBase):
         Integer, primary_key=True, autoincrement=True, index=True)
     id_centro: Mapped[int] = mapped_column(
         Integer, ForeignKey('centro.id_centro'), nullable=False)
-    nombre: Mapped[str] = mapped_column(String(120), nullable=False)
+    nombre_prestacion: Mapped[str] = mapped_column(String(120), nullable=False)
     sigla: Mapped[str] = mapped_column(String(10), nullable=False)
     edad_maxima: Mapped[Edad] = mapped_column(TipoEdad)
     edad_minima: Mapped[Edad] = mapped_column(TipoEdad)

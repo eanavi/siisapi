@@ -5,7 +5,7 @@ from typing import Optional, List
 class RolBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    nombre: str = Field(
+    nombre_rol: str = Field(
         ..., title="Nombre",
         description="Nombre del rol",
         json_schema_extra={"example": "Administrador"})

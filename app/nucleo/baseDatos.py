@@ -1,8 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
-from .configuracion import config
-from ..componentes.siis1n.modelos.base import ModeloBase
+from app.nucleo.configuracion import config
+from app.componentes.siis1n.modelos.base import ModeloBase
 
 engine = create_engine(
     url=config.DB_URL,

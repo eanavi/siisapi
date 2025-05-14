@@ -152,6 +152,21 @@ $function$
 ;
 
 
+CREATE OR REPLACE FUNCTION public.fn_nombre_usuario(p_nombre_usuario character varying)
+ RETURNS TABLE(nombre_persona character varying, rol character varying, cargo character varying)
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    select p.nombres, coalesce(p.paterno, '') || ' ' || coalesce(p.materno, '') || ', ' || coalesce(p.nombres ) as nombre_persona, r.nombre as nombre_rol, e.cargo 
+	from persona as p 
+		inner join empleado as e on p.id_persona = e.id_persona
+		inner join usuario as u on e.id_empleado  = u.id_empleado
+		inner join rol as r on u.id_rol = r.id_rol
+	where u.nombre_usuario = p_nombre_usuario;
+END;
+$function$
+;
+
 -- DROP FUNCTION public.normalizar_cadena(text);
 
 CREATE OR REPLACE FUNCTION public.normalizar_cadena(entrada text)

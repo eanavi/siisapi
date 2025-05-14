@@ -30,6 +30,21 @@ class UsuarioCreate(UsurioBase):
         json_schema_extra={"example": 1})
 
 
+class UsuarioExt(BaseModel):
+    nombre_persona: str = Field(
+        ..., title="Nombre de Persona",
+        description="Nombre completo de la persona",
+        json_schema_extra={"example": "Rafael Mendoza"})
+    cargo: str = Field(
+        ..., title="Cargo",
+        description="Cargo del usuario",
+        json_schema_extra={"example": "Medico Ginecologo"})
+    rol: str = Field(
+        ..., title="Rol",
+        description="Nombre del rol del usuario",
+        json_schema_extra={"example": "Administrador"})
+
+
 class UsuarioResponse(UsurioBase):
     id_usuario: int = Field(
         ..., title="Id Usuario",
