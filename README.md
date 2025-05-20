@@ -1,0 +1,5 @@
+#Sistema de Historias Clinicas 
+
+
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/eanavi/siisapi)
