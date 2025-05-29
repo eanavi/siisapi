@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+<<<<<<< HEAD
 from app.componentes.siis1n.modelos.lista import Lista
 from app.componentes.siis1n.modelos.grupo import Grupo
 from app.componentes.siis1n.modelos.rol import Rol
@@ -16,6 +17,25 @@ from app.componentes.siis1n.modelos.base import ModeloBase, ParametroBase
 from app.nucleo.configuracion import config
 from app.nucleo.seguridad import generar_clave_encriptata
 from app.nucleo.baseDatos import leer_bd
+=======
+from ..componentes.siis1n.modelos.lista import Lista
+from ..componentes.siis1n.modelos.grupo import Grupo
+from ..componentes.siis1n.modelos.rol import Rol
+from ..componentes.siis1n.modelos.empleado import Empleado
+from ..componentes.siis1n.modelos.centro import Centro
+from ..componentes.siis1n.modelos.usuario import Usuario
+from ..componentes.siis1n.modelos.persona import Persona
+from ..componentes.siis1n.modelos.prestacion import Prestacion
+from ..componentes.siis1n.modelos.paciente import Paciente
+from ..componentes.siis1n.modelos.turno import Turno
+from ..componentes.siis1n.modelos.reserva import Reserva
+from ..componentes.siis1n.modelos.consulta import Consulta
+from ..componentes.siis1n.modelos.variables import Variables
+from ..componentes.siis1n.modelos.base import ModeloBase, ParametroBase
+from ..nucleo.configuracion import config
+from ..nucleo.seguridad import generar_clave_encriptata
+from ..nucleo.baseDatos import leer_bd
+>>>>>>> e076d837e8739c13aa77c230bc527317c4e096f4
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, configure_mappers
 from sqlalchemy.sql import text
@@ -406,6 +426,7 @@ def inicia_tablas():
     db.execute(text(consulta))
     db.commit()
 
+<<<<<<< HEAD
     cons_inserta_roles = f"""
     INSERT INTO public.rol (nombre_rol, descripcion, estado_reg, usuario_reg, ip_reg, fecha_reg) VALUES
         ('Medico', 'Rol con acceso a consultas y atenciones medicas', 'V', 'eanavi', '127.0.0.1', '2025-04-29 00:00:00'),
@@ -458,6 +479,8 @@ def inicia_tablas():
     db.commit()
 
 
+=======
+>>>>>>> e076d837e8739c13aa77c230bc527317c4e096f4
     consulta2 = f"""
     insert into public.grupo (id_grupo, nombre_grupo, tipo, area, estado_reg) values
         (1,'cf_ingresofam','N','M','V'),
@@ -525,6 +548,7 @@ def inicia_tablas():
         (63,'se_tipo_parto','N','M','V'),
         (64,'se_tipoegre','N','M','V'),
         (65,'variable_si_no','N','M','V'),
+<<<<<<< HEAD
         (66,'se_tipo_dato','N','M','V'),
         (67, 't_especialidad', 'N', 'A', 'V'),
         (68, 'se_profesion', 'N', 'A', 'V'),
@@ -540,6 +564,12 @@ def inicia_tablas():
 
         ALTER SEQUENCE public.grupo_id_grupo_seq
         RESTART 75;
+=======
+        (66,'se_tipo_dato','N','M','V');
+
+        ALTER SEQUENCE public.grupo_id_grupo_seq
+        RESTART 67;
+>>>>>>> e076d837e8739c13aa77c230bc527317c4e096f4
     """
 
     db.execute(text(consulta2))
@@ -912,6 +942,7 @@ def inicia_tablas():
         (66,'',12,'Paramedicos ', 13,'V'),
         (66,'',13,'Profesional Externo ', 14,'V'),
         (66,'',15,'Lista Generica ', 15,'V'),
+<<<<<<< HEAD
         (66,'',16,'Imagen ', 16,'V'),
         (67,'',24,'Medico General',1,'V'),
         (67,'',32,'Medico General-Mi Salud',2,'V'),
@@ -1241,6 +1272,9 @@ def inicia_tablas():
 
 
 
+=======
+        (66,'',16,'Imagen ', 16,'V');
+>>>>>>> e076d837e8739c13aa77c230bc527317c4e096f4
 
 
     """
@@ -1287,7 +1321,15 @@ def inicia_tablas():
 def inicio_bd():
     db = next(leer_bd())
 
+<<<<<<< HEAD
     
+=======
+    configure_mappers()
+
+    ModeloBase.metadata.create_all(bind=engine)
+    ParametroBase.metadata.create_all(bind=engine)
+
+>>>>>>> e076d837e8739c13aa77c230bc527317c4e096f4
     admin_rol = db.query(Rol).filter(Rol.nombre_rol == "Administrador").first()
     if not admin_rol:
         admin_rol = Rol(
@@ -1371,6 +1413,7 @@ def inicio_bd():
         )
         db.add(usuario)
         db.commit()
+<<<<<<< HEAD
     
 
 def continua_bd():
@@ -1475,16 +1518,24 @@ def continua_bd():
         )
         db.add(usuario2)
         db.commit()   
+=======
+    """
+
+    """
+>>>>>>> e076d837e8739c13aa77c230bc527317c4e096f4
 
     db.close()
 
 
 if __name__ == "__main__":
     # preparar_bd()
+<<<<<<< HEAD
 
     configure_mappers()
     ModeloBase.metadata.create_all(bind=engine)
     ParametroBase.metadata.create_all(bind=engine)
+=======
+>>>>>>> e076d837e8739c13aa77c230bc527317c4e096f4
     inicio_bd()
     inicia_tablas()
     continua_bd()
