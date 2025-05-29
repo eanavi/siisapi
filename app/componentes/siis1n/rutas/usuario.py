@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.orm import Session
 from app.componentes.siis1n.servicios.usuario import ServicioUsuario
-from app.componentes.siis1n.esquemas.usuario import RespuestaPaginada, UsuarioCreate, UsuarioResponse
+from app.componentes.siis1n.esquemas.usuario import RespuestaPaginada, UsuarioExt, UsuarioCreate, UsuarioResponse
 from app.nucleo.seguridad import verificar_token
 from app.nucleo.baseDatos import leer_bd
 
@@ -29,6 +29,21 @@ def listar_usuarios(
 def obtner_usuario(id_usuario: int, db: Session = Depends(leer_bd)):
     usuario = serv_usuario.leer(db, id_usuario)
     return usuario
+
+
+@router.get("/nombre/{nombre_usuario}",
+            response_model=UsuarioExt,
+            summary=f"Obtener Usuario por Nombre",
+            description=f"Obtiene un usuario por su nombre")
+def obtener_usuario_por_nombre(
+        nombre_usuario: str,
+        db: Session = Depends(leer_bd),
+        token: str = Depends(verificar_token)
+):
+    usuarioExt = serv_usuario.leer_por_nombre(db, nombre_usuario)
+    if not usuarioExt:
+        return None
+    return usuarioExt
 
 
 @router.post("/",

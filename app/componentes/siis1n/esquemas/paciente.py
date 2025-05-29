@@ -1,6 +1,7 @@
 from pydantic import BaseModel, UUID4, Field, ConfigDict
 from app.componentes.siis1n.esquemas.persona import PersonaBase
 from typing import Optional, List
+from datetime import date, time
 
 
 class PacienteBase(BaseModel):
@@ -103,6 +104,44 @@ class PacientePersona(PersonaBase):
         None, title="Gestion Comunitaria",
         description="Gestion comunitaria del paciente",
         json_schema_extra={"example": "Gestion comunitaria"})
+
+
+class PacienteListado(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id_paciente: int = Field(
+        ..., title="Id Paciente",
+        description="Identificador unico del paciente",
+        json_schema_extra={"example": 1})
+    ci: str = Field(
+        ..., title="CI",
+        description="Cedula de identidad del paciente",
+        json_schema_extra={"example": "12345678"})
+    paterno: str = Field(
+        ..., title="Apellido Paterno",
+        description="Apellido paterno del paciente",
+        json_schema_extra={"example": "Perez"})
+    materno: str = Field(
+        ..., title="Apellido Materno",
+        description="Apellido materno del paciente",
+        json_schema_extra={"example": "Lopez"})
+    nombres: str = Field(
+        ..., title="Nombres",
+        description="Nombres del paciente",
+        json_schema_extra={"example": "Juan Carlos"})
+    edad: str = Field(
+        ..., title="Edad",
+        description="Edad del paciente en años",
+        json_schema_extra={"example": 30})
+    fecha_reserva: Optional[date] = Field(
+        None, title="Fecha de Reserva",
+        description="Fecha de reserva del paciente",
+        json_schema_extra={"example": "2023-10-01T12:00:00Z"})
+    hora_reserva: Optional[time] = Field(
+        None, title="Hora de Reserva",
+        description="Hora de reserva del paciente",
+        json_schema_extra={"example": "08:00:00"})
+
 
 
 class PacienteResponse(PacientePersona):

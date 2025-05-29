@@ -11,7 +11,7 @@ import jwt  # Usamos PyJWT
 from app.nucleo.seguridad import SECRET_KEY, ALGORITHM
 
 # Configuración de la base de datos en memoria para pruebas
-SQLALCHEMY_DATABASE_URL = "sqlite:///test.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///datos/test.db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={
                        "check_same_thread": False})
 TestingSessionLocal = sessionmaker(

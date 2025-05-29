@@ -1,5 +1,15 @@
 clave del Sitio
 
+#Conectarse 
+psql -U usuario 
+psql -d facturas -U emilio
+
+#listar las bases de datos 
+\list
+
+
+CREATE USER emilio WITH PASSWORD 'password-del-usuario-emilio';
+GRANT ALL PRIVILEGES ON DATABASE facturas to emilio;
 
 
 
@@ -8,3 +18,15 @@ nombre de la base de datos: bdsiis2
 nombre Servidor: siisserver
 nombre de usuario : orbopbwwax
 clave : $AQmNCsJl7lPte7s
+
+
+para iniciar la aplicacion
+
+$env:PYTHONPATH="g:\prg\python\siis\siisapi"
+$Set-Location "g:\prg\python\siis\siisapi"
+uvicorn app.principal:app
+
+para correr el modulo de inicio de base de datos
+$env:PYTHONPATH="g:\prg\python\siis\siisapi"
+$Set-Location "g:\prg\python\siis\siisapi"
+python -m app.datos.iniciarbd

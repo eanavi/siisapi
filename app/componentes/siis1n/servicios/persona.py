@@ -28,6 +28,8 @@ class ServicioPersona(ServicioBase):
         centros_paginados = ser_centro.leer_todos(db, 1, 1000)
         centros = centros_paginados["items"]
 
+        print(ser_centro)
+
         for centro in centros:
             serv = centro.direccion
             base_datos = "BDEstadistica"
@@ -35,16 +37,16 @@ class ServicioPersona(ServicioBase):
             clave = centro.clave
 
             try:
-                with next(obtener_sesion_mssql(serv, base_datos, usuario, clave)) as db_mssql:
+                with next(obtener_sesion_mssql(serv, base_datos, usuario, clave, 1433)) as db_mssql:
                     resultado = db_mssql.execute(text(f"""
                        exec dbo.spBuscaPersona :criterio
                     """), {'criterio': criterio})
                     filas = resultado.mappings().all()
                     if filas:
                         personas = [
-                            transformar_se_hc_persona(f, centro.nombre) for f in filas]
+                            transformar_se_hc_persona(f, centro.nombre_centro) for f in filas]
                         return paginacion(personas, pagina, tamanio)
             except Exception as e:
-                print(f"Error al consultar centro {centro.nombre}: {str(e)}")
+                print(f"Error al consultar centro {centro.nombre_centro}: {str(e)}")
                 continue
         return []

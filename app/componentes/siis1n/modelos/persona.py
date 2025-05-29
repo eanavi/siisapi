@@ -1,6 +1,6 @@
 import uuid
-from sqlalchemy import String, Date, CHAR, JSON
-from sqlalchemy.dialects.postgresql import UUID as PGUUID
+from sqlalchemy import String, Date, CHAR
+from sqlalchemy.dialects.postgresql import UUID as PGUUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 from typing import Optional
 from .base import ModeloBase
@@ -19,6 +19,6 @@ class Persona(ModeloBase):
     nombres: Mapped[str] = mapped_column(String(120), nullable=False)
     fecha_nacimiento: Mapped[Date] = mapped_column(Date, nullable=False)
     sexo: Mapped[str] = mapped_column(CHAR(1), nullable=False)
-    direccion: Mapped[Optional[dict]] = mapped_column(JSON)
-    telefono: Mapped[Optional[dict]] = mapped_column(JSON)
-    correo: Mapped[Optional[dict]] = mapped_column(JSON)
+    direccion: Mapped[Optional[dict]] = mapped_column(JSONB)
+    telefono: Mapped[Optional[dict]] = mapped_column(JSONB)
+    correo: Mapped[Optional[dict]] = mapped_column(JSONB)

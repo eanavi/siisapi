@@ -9,7 +9,7 @@ class PrestacionBase(BaseModel):
         ..., title="Id Centro",
         description="Identificador unico del centro",
         json_schema_extra={"example": 1})
-    nombre: str = Field(
+    nombre_prestacion: str = Field(
         ..., title="Nombre",
         description="Nombre de la prestacion",
         json_schema_extra={"example": "Consulta Medica"})

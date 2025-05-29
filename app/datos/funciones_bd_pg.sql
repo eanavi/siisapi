@@ -152,6 +152,21 @@ $function$
 ;
 
 
+CREATE OR REPLACE FUNCTION public.fn_nombre_usuario(p_nombre_usuario character varying)
+ RETURNS TABLE(nombre_persona character varying, rol character varying, cargo character varying)
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    select p.nombres, coalesce(p.paterno, '') || ' ' || coalesce(p.materno, '') || ', ' || coalesce(p.nombres ) as nombre_persona, r.nombre as nombre_rol, e.cargo 
+	from persona as p 
+		inner join empleado as e on p.id_persona = e.id_persona
+		inner join usuario as u on e.id_empleado  = u.id_empleado
+		inner join rol as r on u.id_rol = r.id_rol
+	where u.nombre_usuario = p_nombre_usuario;
+END;
+$function$
+;
+
 -- DROP FUNCTION public.normalizar_cadena(text);
 
 CREATE OR REPLACE FUNCTION public.normalizar_cadena(entrada text)
@@ -204,3 +219,40 @@ BEGIN
 END;
 $function$
 ;
+
+
+-- DROP FUNCTION public.fn_obtener_menu_por_rol(varchar);
+
+CREATE OR REPLACE FUNCTION public.fn_obtener_menu_por_rol(
+    p_nombre_rol varchar(60)
+)
+RETURNS TABLE (
+    nombre_menu varchar(120),
+    ruta varchar(255),
+    icono varchar(50),
+    orden int4,
+    metodo varchar[]
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        m.nombre_menu,
+        m.ruta,
+        m.icono,
+        m.orden,
+		rm.metodo
+    FROM 
+        public.rol r
+        JOIN public.rol_menu rm ON r.id_rol = rm.id_rol
+        JOIN public.menu m ON rm.id_menu = m.id_menu
+    WHERE 
+        r.nombre_rol = p_nombre_rol
+        AND r.estado_reg = 'V'  -- Rol activo
+        AND m.estado_reg = 'V'  -- Menú activo
+        AND rm.estado_reg = 'V'  -- Relación activa
+    ORDER BY 
+        m.orden;
+END;
+$$;

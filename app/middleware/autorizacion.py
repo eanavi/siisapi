@@ -9,15 +9,16 @@ from app.nucleo.seguridad import SECRET_KEY, ALGORITHM
 
 PERMISOS_ROLES = {
     "GET": {
-        "/personas": ["Administrador", "operador", "medico"],
+        "/personas": ["Administrador", "operador", "Medico"],
         "/usuarios": ["Administrador", "operador"],
-        "/consultas": ["Administrador", "operador", "medico"],
+        "/consultas": ["Administrador", "operador", "Medico"],
         "/empleados": ["Administrador"],
         "/grupos": ["Administrador"],
         "/listas": ["Administrador"],
         "/soaps": ["Administrador"],
-        "/pacientes": ["Administrador", "operador", "medico"],
-        "/prestaciones": ["Administrador", "operador", "medico"],
+        "/pacientes": ["Administrador", "operador", "Medico"],
+        "/prestaciones": ["Administrador", "operador", "Medico"],
+        "/menus": ["Administrador", "operador", "Medico"],
 
     },
     "POST": {
@@ -28,7 +29,7 @@ PERMISOS_ROLES = {
         "/empleados": ["Administrador"],
         "/listas": ["Administrador"],
         "/pacientes": ["Administrador"],
-        "/prestaciones": ["Administrador", "operador", "medico"],
+        "/prestaciones": ["Administrador", "operador", "Medico"],
     },
     "PUT": {
         "/usuarios": ["Administrador", "operador"],
@@ -38,8 +39,8 @@ PERMISOS_ROLES = {
         "/grupos": ["Administrador"],
         "/empleados": ["Administrador"],
         "/listas": ["Administrador"],
-        "/pacientes": ["Administrador", "operador", "medico"],
-        "/prestaciones": ["Administrador", "operador", "medico"],
+        "/pacientes": ["Administrador", "operador", "Medico"],
+        "/prestaciones": ["Administrador", "operador", "Medico"],
     },
     "DELETE": {
         "/usuarios": ["Administrador"],

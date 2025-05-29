@@ -1,5 +1,6 @@
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import text
 from app.componentes.siis1n.esquemas.paciente import PacientePersona
 from app.componentes.siis1n.servicios.persona import ServicioPersona
 from fastapi import HTTPException, status
@@ -145,3 +146,23 @@ class ServicioPaciente(ServicioBase):
             db.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                 detail=f"Error al actualizar el empleado: {str(e)}")
+
+
+    def leer_pacientes_asignados(self, db: Session, nombre_usuario: str):
+        """
+        Lista los pacientes asignados al usuario autenticado.
+        """
+        try:
+            pacientes = db.execute(text(f""" 
+                                        select * from public.obtener_pacientes_por_usuario(:nombre_usuario)"""),
+                                  {'nombre_usuario': nombre_usuario})
+    
+            filas = pacientes.mappings().all()
+            if not filas:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                    detail="No se encontraron pacientes asignados")
+
+            return filas
+        except SQLAlchemyError as e:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail=f"Error al obtener los pacientes asignados: {str(e)}")

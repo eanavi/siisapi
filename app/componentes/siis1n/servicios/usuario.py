@@ -37,3 +37,15 @@ class ServicioUsuario(ServicioBase):
         })
 
         return token
+
+    def leer_por_nombre(self, db: Session, nombre_usuario: str):
+        consulta = db.execute(text(f""" select nombre_persona, nombre_rol, cargo, 
+                                        from fn_nombre_usuario(:criterio)
+                                        """), {'criterio': nombre_usuario})
+        usuarioFront = consulta.mappings().first()
+        if not usuarioFront:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Usuario no encontrado"
+            )
+        return usuarioFront

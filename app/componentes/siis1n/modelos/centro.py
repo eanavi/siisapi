@@ -11,7 +11,7 @@ class Centro(ModeloBase):
         Integer, primary_key=True, autoincrement=True, index=True)
     codigo_snis: Mapped[int] = mapped_column(
         Integer, nullable=False, unique=True)
-    nombre: Mapped[str] = mapped_column(String(120), nullable=False)
+    nombre_centro: Mapped[str] = mapped_column(String(120), nullable=False)
     direccion: Mapped[Optional[str]] = mapped_column(String(120))
     usuario: Mapped[str] = mapped_column(String(20), nullable=False)
     clave: Mapped[str] = mapped_column(String(255), nullable=False)

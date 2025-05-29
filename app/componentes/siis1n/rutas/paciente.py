@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.orm import Session
 from app.componentes.siis1n.servicios.paciente import ServicioPaciente
 from app.componentes.siis1n.esquemas.paciente import RespuestaPaginada, \
-    PacientePersona, PacienteResponse
+    PacientePersona, PacienteListado
 from app.nucleo.seguridad import verificar_token
 from app.nucleo.conexion import obtener_id_centro
 from app.nucleo.baseDatos import leer_bd
@@ -24,6 +24,18 @@ def listar_pacientes(
     pacientes = serv_paciente.leer_todos(db, pagina, tamanio)
     return pacientes
 
+@router.get("/asignados", response_model=list[PacienteListado])
+def listar_pacientes_asignados(
+        db: Session = Depends(leer_bd),
+        token: str = Depends(verificar_token)):
+    """
+    Lista los pacientes asignados al usuario autenticado.
+    """
+    nombre_usuario = token["nombre_usuario"]
+    pacientes = serv_paciente.leer_pacientes_asignados(
+        db, nombre_usuario)
+    return pacientes
+
 
 @router.get("/{id_paciente}", response_model=PacientePersona,
             summary="Obtener Paciente por ID",
@@ -31,6 +43,9 @@ def listar_pacientes(
 def obtener_paciente(id_paciente: int, db: Session = Depends(leer_bd)):
     paciente = serv_paciente.leer_paciente_con_persona(db, id_paciente)
     return paciente
+
+
+
 
 
 @router.post("/", response_model=int,
