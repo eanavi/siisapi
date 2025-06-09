@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from app.nucleo.baseDatos import leer_bd, init_bd
 from app.componentes.siis1n.rutas import router as siis1n_router
 from app.componentes.soaps.rutas import router as soaps_router
@@ -28,7 +29,22 @@ app = FastAPI(
     lifespan=inicioApp
 )
 
+
+origenes = [
+    "http://localhost:4200",
+    "http://127.0.0.1:4200"
+]
+
 app.add_middleware(AuthMiddleware)
+
+#modificar para cuando se esta en produccion
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins = ["*"], 
+    allow_credentials = True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 app.include_router(siis1n_router)
 app.include_router(soaps_router)
