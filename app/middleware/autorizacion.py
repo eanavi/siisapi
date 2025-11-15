@@ -9,38 +9,38 @@ from app.nucleo.seguridad import SECRET_KEY, ALGORITHM
 
 PERMISOS_ROLES = {
     "GET": {
-        "/personas": ["Administrador", "operador", "Medico"],
-        "/usuarios": ["Administrador", "operador"],
-        "/consultas": ["Administrador", "operador", "Medico"],
+        "/personas": ["Administrador", "Operador", "Medico"],
+        "/usuarios": ["Administrador", "Operador", "Medico"],
+        "/consultas": ["Administrador", "Operador", "Medico"],
         "/empleados": ["Administrador"],
         "/grupos": ["Administrador"],
         "/listas": ["Administrador"],
         "/soaps": ["Administrador"],
-        "/pacientes": ["Administrador", "operador", "Medico"],
-        "/prestaciones": ["Administrador", "operador", "Medico"],
-        "/menus": ["Administrador", "operador", "Medico"],
+        "/pacientes": ["Administrador", "Operador", "Medico"],
+        "/prestaciones": ["Administrador", "Operador", "Medico"],
+        "/menus": ["Administrador", "Operador", "Medico"],
 
     },
     "POST": {
-        "/usuarios": ["Administrador"],
-        "/consultas": ["medico"],
+        "/usuarios": ["Administrador", "Medico"],
+        "/consultas": ["Medico"],
         "/personas": ["Administrador"],  # Solo médicos pueden crear consultas
         "/grupos": ["Administrador"],
         "/empleados": ["Administrador"],
         "/listas": ["Administrador"],
         "/pacientes": ["Administrador"],
-        "/prestaciones": ["Administrador", "operador", "Medico"],
+        "/prestaciones": ["Administrador", "Operador", "Medico"],
     },
     "PUT": {
-        "/usuarios": ["Administrador", "operador"],
-        # Solo operador y admin pueden modificar personas
-        "/personas": ["administrador", "operador"],
+        "/usuarios": ["Administrador", "Operador"],
+        # Solo Operador y admin pueden modificar personas
+        "/personas": ["administrador", "Operador"],
         "/consultas": ["medico"],  # Solo médicos pueden modificar consultas
         "/grupos": ["Administrador"],
         "/empleados": ["Administrador"],
         "/listas": ["Administrador"],
-        "/pacientes": ["Administrador", "operador", "Medico"],
-        "/prestaciones": ["Administrador", "operador", "Medico"],
+        "/pacientes": ["Administrador", "Operador", "Medico"],
+        "/prestaciones": ["Administrador", "Operador", "Medico"],
     },
     "DELETE": {
         "/usuarios": ["Administrador"],
@@ -55,8 +55,12 @@ PERMISOS_ROLES = {
 
 
 def normalizar_ruta(ruta: str) -> str:
-    ruta_normalizada = re.match(r"(/[\w-]+)", ruta).group(1)
-    return ruta_normalizada
+    if ruta == "/":
+        return "/"
+    match = re.match(r"(/[\w-]+)", ruta)
+    return match.group(1) if match else ruta
+
+
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
@@ -66,10 +70,13 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
         # if os.getenv("TEST_ENV") == "true":
         #    return await call_next(request)
-        if request.url.path in ["/docs", "/redoc", "/openapi.json"]:
+        if request.url.path in ["/","/favicon.ico","/test-bd","/docs", "/redoc", "/openapi.json"]:
             return await call_next(request)
 
+        
+
         # Elegimos solo la ruta
+        print("Autorizando ruta:", request.url.path)
         ruta = normalizar_ruta(request.url.path)
         metodo = request.method
 
@@ -105,7 +112,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 return JSONResponse(
                     status_code=status.HTTP_403_FORBIDDEN,
                     content={
-                        "detail": f"No tienes permisos para acceder a {ruta}({metodo})."}
+                        "detail": f"No tienes permisos para acceder a {ruta}({metodo}){rol} ."}
                 )
         except jwt.ExpiredSignatureError:
             return JSONResponse(

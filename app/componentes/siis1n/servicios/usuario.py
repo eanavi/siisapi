@@ -5,6 +5,9 @@ from .base import ServicioBase
 from app.componentes.siis1n.modelos.usuario import Usuario
 from app.nucleo.seguridad import verificar_clave, crear_token_acceso
 from app.nucleo.conexion_cache import guardar_datos_conexion
+from app.componentes.siis1n.esquemas.usuario import InformacionUsuario
+from sqlalchemy.exc import SQLAlchemyError
+
 
 
 class ServicioUsuario(ServicioBase):
@@ -49,3 +52,22 @@ class ServicioUsuario(ServicioBase):
                 detail="Usuario no encontrado"
             )
         return usuarioFront
+
+    def obtener_informacion_usuario(self, db: Session, usuario:str) -> InformacionUsuario:
+        try:
+            resultado = db.execute(
+                text("""SELECT * FROM public.fn_obtener_perfil_usuario(:nombre_usuario)"""),
+                {'nombre_usuario': usuario}
+            )
+            fila = resultado.mappings().first()
+            if not fila:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Información para el usuario '{usuario}' no encontrada."
+                )
+            return InformacionUsuario(**fila)
+        except SQLAlchemyError as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error al leer la información del usuario: {str(e)}"
+            )

@@ -13,6 +13,23 @@ class ServicioPaciente(ServicioBase):
     def __init__(self):
         super().__init__(Paciente, "id_paciente")
 
+    def leer_pacientes(self, db:Session, criterio:str = None):
+        try:
+            personas = db.execute(text(f"""
+            select * from public.buscar_pacientes(:criterio)
+            """), {"criterio":criterio})
+
+            filas = personas.all()
+            if not filas:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                    detail="No se encontraron pacientes")
+            return filas
+        except SQLAlchemyError as e:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+                                detail=f"Error al obtener pacientes asignados : {str(e)}")
+
+
+
     def crear_paciente_con_persona(
             self,
             db: Session,

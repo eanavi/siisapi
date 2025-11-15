@@ -1,5 +1,6 @@
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import text
 from app.componentes.siis1n.esquemas.empleado import EmpleadoPersona
 from app.componentes.siis1n.servicios.persona import ServicioPersona
 from app.componentes.siis1n.modelos.base import ParametroBase, ModeloBase
@@ -12,6 +13,21 @@ from ..modelos.empleado import Empleado
 class ServicioEmpleado(ServicioBase):
     def __init__(self):
         super().__init__(Empleado, 'id_empleado')
+
+    def leer_empleados(self, db:Session, criterio:str = None):
+        try:
+            empleados = db.execute(text(f"""
+            select * from public.buscar_empleados(:criterio)                            
+            """), {"criterio":criterio})
+            filas = empleados.all()
+
+            if not filas:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                    detail="No se encontraron empleados")
+            return filas
+        except SQLAlchemyError as e:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail=f"Error al obtener empleados {str(e)}")
 
     def crear_empleado_con_persona(
             self,

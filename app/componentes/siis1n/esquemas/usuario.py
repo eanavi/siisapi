@@ -56,6 +56,23 @@ class UsuarioResponse(UsurioBase):
         json_schema_extra={"example": "123e4567-e89b-12d3-a456-426614174000"})
 
 
+class InformacionUsuario(BaseModel):
+    nombre_completo: str = Field(
+        ..., title="Nombre Completo",
+        description="Nombre completo del usuario",
+        json_schema_extra={"example": "Rafael Mendoza"})
+    nombre_centro: str = Field(
+        ..., title="Centro de Salud",
+        description="Nombre del centro de salud",
+        json_schema_extra={"example": "Asistencia Pública"})
+    nombre_rol: str = Field(
+        ..., title="Perfil",
+        description="Perfil del usuario",
+        json_schema_extra={"example": "Administrador"})
+
+
+
+
 class RespuestaPaginada(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

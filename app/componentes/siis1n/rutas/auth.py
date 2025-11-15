@@ -13,4 +13,4 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), bd: Session = Depend
     servicio_usuario = ServicioUsuario()
     token = servicio_usuario.autenticar(
         bd, form_data.username, form_data.password)
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "token_type": "Bearer"}

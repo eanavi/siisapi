@@ -12,6 +12,7 @@ from . import turno
 from . import reserva
 from . import variables
 from . import menu
+from . import usuario
 
 router = APIRouter()
 
@@ -28,3 +29,5 @@ router.include_router(turno.router)
 router.include_router(reserva.router)
 router.include_router(variables.router)
 router.include_router(menu.router)
+router.include_router(usuario.router)
+

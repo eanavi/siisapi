@@ -4,6 +4,9 @@ from app.componentes.siis1n.servicios.usuario import ServicioUsuario
 from app.componentes.siis1n.esquemas.usuario import RespuestaPaginada, UsuarioExt, UsuarioCreate, UsuarioResponse
 from app.nucleo.seguridad import verificar_token
 from app.nucleo.baseDatos import leer_bd
+from app.componentes.siis1n.servicios.menu import ServicioMenu
+from app.componentes.siis1n.esquemas.usuario import InformacionUsuario
+
 
 serv_usuario = ServicioUsuario()
 router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
@@ -44,6 +47,13 @@ def obtener_usuario_por_nombre(
     if not usuarioExt:
         return None
     return usuarioExt
+
+@router.get("/informacion/{nombre_usuario}", response_model=InformacionUsuario,
+            summary="Obtener información del usuario para el menú",
+            description="Obtiene el nombre completo, centro de salud y perfil de un usuario.")
+def obtener_informacion_usuario(nombre_usuario: str, db: Session = Depends(leer_bd)):
+    info_usuario = serv_usuario.obtener_informacion_usuario(db, nombre_usuario)
+    return info_usuario
 
 
 @router.post("/",
@@ -86,3 +96,4 @@ def eliminar_usuario(
         ip_reg=ip
     )
     return usuario_eliminado
+

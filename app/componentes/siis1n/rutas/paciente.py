@@ -2,27 +2,22 @@ from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.orm import Session
 from app.componentes.siis1n.servicios.paciente import ServicioPaciente
 from app.componentes.siis1n.esquemas.paciente import RespuestaPaginada, \
-    PacientePersona, PacienteListado
+    PacientePersona, PacienteListado, PacienteB
 from app.nucleo.seguridad import verificar_token
 from app.nucleo.conexion import obtener_id_centro
 from app.nucleo.baseDatos import leer_bd
-
+from typing import Optional
 serv_paciente = ServicioPaciente()
 
 router = APIRouter(prefix="/pacientes", tags=["Pacientes"])
 
 
-@router.get("/", response_model=RespuestaPaginada, summary="Listar todas los Pacientes",
+@router.get("/listar/", response_model=list[PacienteB], summary="Listar todas los Pacientes",
             description="Lista todas los pacientes registrados en el sistema")
-def listar_pacientes(
-    pagina: int = Query(1, alias="pagina", ge=1,
-                        description="Numero de pagina a mostrar"),
-    tamanio: int = Query(10, alias="tamanio", ge=1, le=50,
-                         description="Cantidad de registros a mostrar"),
-    db: Session = Depends(leer_bd)
-):
-    pacientes = serv_paciente.leer_todos(db, pagina, tamanio)
+def listar_pacientes(db: Session = Depends(leer_bd), criterio: Optional[str] = None):
+    pacientes = serv_paciente.leer_pacientes(db, criterio=criterio )
     return pacientes
+    
 
 @router.get("/asignados", response_model=list[PacienteListado])
 def listar_pacientes_asignados(
@@ -43,9 +38,6 @@ def listar_pacientes_asignados(
 def obtener_paciente(id_paciente: int, db: Session = Depends(leer_bd)):
     paciente = serv_paciente.leer_paciente_con_persona(db, id_paciente)
     return paciente
-
-
-
 
 
 @router.post("/", response_model=int,
