@@ -1,11 +1,11 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.sql import text
 from fastapi import HTTPException, status
 from .base import ServicioBase
 from app.componentes.siis1n.modelos.usuario import Usuario
-from app.nucleo.seguridad import verificar_clave, crear_token_acceso
+from app.nucleo.seguridad import verificar_clave, crear_token_acceso, generar_clave_encriptata
 from app.nucleo.conexion_cache import guardar_datos_conexion
-from app.componentes.siis1n.esquemas.usuario import InformacionUsuario
+from app.componentes.siis1n.esquemas.usuario import InformacionUsuario, UsuarioCreate
 from sqlalchemy.exc import SQLAlchemyError
 
 
@@ -16,8 +16,8 @@ class ServicioUsuario(ServicioBase):
 
     def autenticar(self, db: Session, nombre_usuario: str, clave: str):
         """ Autenticar al usuario verificando credenciales """
-        consulta = db.execute(text(f""" select nombre_usuario, clave, centro_salud, id_centro,
-                                     usuario, clave_centro, direccion, puerto, nombre_rol 
+        consulta = db.execute(text(f""" select nombre_usuario, clave, nombre_completo, centro_salud, id_centro,
+                                     usuario_bd, clave_bd, direccion_bd, puerto, nombre_rol 
                                      from fn_usuario(:criterio)
                                      """), {'criterio': nombre_usuario})
         usuario = consulta.mappings().first()
@@ -29,10 +29,11 @@ class ServicioUsuario(ServicioBase):
         token = crear_token_acceso(
             {"sub": usuario.nombre_usuario, "rol": usuario.nombre_rol})
         guardar_datos_conexion(token, {
-            "servidor": usuario.direccion,
+            "servidor": usuario.direccion_bd,
+            "nombre_completo": usuario.nombre_completo,
             "base_datos": "BDEstadistica",
-            "usuario": usuario.usuario,
-            "clave": usuario.clave_centro,
+            "usuario": usuario.usuario_bd,
+            "clave": usuario.clave_bd,
             "puerto": usuario.puerto,
             "centro_salud": usuario.centro_salud,
             "id_centro": usuario.id_centro,
@@ -40,6 +41,19 @@ class ServicioUsuario(ServicioBase):
         })
 
         return token
+    
+    def crear_usuario(self, db: Session, usuario: UsuarioCreate, usuario_reg: str, ip: str) -> Usuario:
+        datos_usuario = {
+            "id_empleado": usuario.id_empleado,
+            "id_rol": usuario.id_rol,
+            "nombre_usuario": usuario.nombre_usuario,
+            "clave": generar_clave_encriptata(usuario.clave)
+        }
+        #Llamamos al metodo crear de la clase base para mantener la logica comun
+        nuevo_usuario = self.crear(
+            db, datos_usuario, usuario_reg, ip, relaciones=['empleado']
+        )
+        return nuevo_usuario
 
     def leer_por_nombre(self, db: Session, nombre_usuario: str):
         consulta = db.execute(text(f""" select nombre_persona, nombre_rol, cargo, 

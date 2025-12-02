@@ -16,10 +16,6 @@ class UsuarioCreate(UsurioBase):
         ..., title="Clave",
         description="Clave de acceso del usuario",
         json_schema_extra={"example": "123456"})
-    id_persona: UUID4 = Field(
-        ..., title="Id Persona",
-        description="Identificador unico de la persona",
-        json_schema_extra={"example": "123e4567-e89b-12d3-a456-426614174000"})
     id_rol: int = Field(
         ..., title="Id Rol",
         description="Identificador unico del rol",
@@ -50,10 +46,6 @@ class UsuarioResponse(UsurioBase):
         ..., title="Id Usuario",
         description="Identificador unico del usuario",
         json_schema_extra={"example": 1})
-    id_persona: UUID4 = Field(
-        ..., title="Id Persona",
-        description="Identificador unico de la persona",
-        json_schema_extra={"example": "123e4567-e89b-12d3-a456-426614174000"})
 
 
 class InformacionUsuario(BaseModel):

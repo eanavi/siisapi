@@ -9,38 +9,38 @@ from app.nucleo.seguridad import SECRET_KEY, ALGORITHM
 
 PERMISOS_ROLES = {
     "GET": {
-        "/personas": ["Administrador", "Operador", "Medico"],
-        "/usuarios": ["Administrador", "Operador", "Medico"],
-        "/consultas": ["Administrador", "Operador", "Medico"],
-        "/empleados": ["Administrador"],
-        "/grupos": ["Administrador"],
+        "/personas": ["Administrador", "Operador"],
+        "/usuarios": ["Administrador", "Operador", "Medico", "Enfermera"],
+        "/consultas": ["Administrador", "Operador", "Medico", "Enfermera"],
+        "/empleados": ["Administrador", "Operador"],
+        "/grupos": ["Administrador", "Operador"],
         "/listas": ["Administrador"],
         "/soaps": ["Administrador"],
-        "/pacientes": ["Administrador", "Operador", "Medico"],
+        "/pacientes": ["Administrador", "Operador", "Medico", "Enfermera"],
         "/prestaciones": ["Administrador", "Operador", "Medico"],
-        "/menus": ["Administrador", "Operador", "Medico"],
+        "/menus": ["Administrador", "Operador", "Medico", "Enfermera"],
 
     },
     "POST": {
-        "/usuarios": ["Administrador", "Medico"],
-        "/consultas": ["Medico"],
+        "/usuarios": ["Administrador", "Operador"],
+        "/consultas": ["Administrador","Medico", "Enfermera"],
         "/personas": ["Administrador"],  # Solo médicos pueden crear consultas
         "/grupos": ["Administrador"],
-        "/empleados": ["Administrador"],
+        "/empleados": ["Administrador", "Operador"],
         "/listas": ["Administrador"],
-        "/pacientes": ["Administrador"],
+        "/pacientes": ["Administrador", "Medico", "Enfermera"],
         "/prestaciones": ["Administrador", "Operador", "Medico"],
     },
     "PUT": {
-        "/usuarios": ["Administrador", "Operador"],
+        "/usuarios": ["Administrador", "Operador", "Medico", "Enfermera"],
         # Solo Operador y admin pueden modificar personas
         "/personas": ["administrador", "Operador"],
-        "/consultas": ["medico"],  # Solo médicos pueden modificar consultas
+        "/consultas": ["Medico", "Enfermera"],  # Solo médicos pueden modificar consultas
         "/grupos": ["Administrador"],
         "/empleados": ["Administrador"],
         "/listas": ["Administrador"],
-        "/pacientes": ["Administrador", "Operador", "Medico"],
-        "/prestaciones": ["Administrador", "Operador", "Medico"],
+        "/pacientes": ["Administrador", "Operador", "Medico", "Enfermera"],
+        "/prestaciones": ["Administrador", "Operador", "Medico", "Enfermera"],
     },
     "DELETE": {
         "/usuarios": ["Administrador"],

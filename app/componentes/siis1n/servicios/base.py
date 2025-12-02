@@ -21,7 +21,8 @@ class ServicioBase(Generic[T]):
             db: Session,
             obj: dict,
             usuario_reg: Optional[str] = None,
-            ip_reg: Optional[str] = None
+            ip_reg: Optional[str] = None,
+            relaciones: Optional[List[str]] = None
     ) -> T:
         try:
             nuevo_obj = self.modelo(**obj)
@@ -35,7 +36,10 @@ class ServicioBase(Generic[T]):
                 nuevo_obj.fecha_reg = datetime.now()
             db.add(nuevo_obj)
             db.commit()
-            db.refresh(nuevo_obj)
+            if relaciones:
+                db.refresh(nuevo_obj, attribute_names=relaciones)
+            else:
+                db.refresh(nuevo_obj)
             return nuevo_obj
         except SQLAlchemyError as e:
             db.rollback()

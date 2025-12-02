@@ -1,0 +1,122 @@
+# Login usuario EANAVI
+POST http://127.0.0.1:8000/auth/login
+Content-Type: application/x-www-form-urlencoded
+Accept: application/json
+
+username=aantezana&password=1234567
+
+### Informacion usuairo logueado
+GET http://127.0.0.1:8000/usuarios/informacion/aantezana
+accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYW50ZXphbmEiLCJyb2wiOiJFbmZlcm1lcmEiLCJleHAiOjE3NjQ1NjY0ODZ9.Ap_coyIdxMfmR9ldd3_7eWK4pT6u5Conr3g5tVVuDHo
+
+### Listar opciones de menu para usuario logueado
+GET http://127.0.0.1:8000/menus/rol/Enfermera
+accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYW50ZXphbmEiLCJyb2wiOiJFbmZlcm1lcmEiLCJleHAiOjE3NjQ1NjY0ODZ9.Ap_coyIdxMfmR9ldd3_7eWK4pT6u5Conr3g5tVVuDHo
+
+
+### Listar pacientes asignados a medico
+get http://127.0.0.1:8000/pacientes/asignados
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYW50ZXphbmEiLCJyb2wiOiJFbmZlcm1lcmEiLCJleHAiOjE3NjQ1Njc2MjV9.xzOfXCDpKfX0ZBOXJC5DU-HNVSHskdbFzaP1i6rwkoA
+
+### Buscar pacientes asignados a medico con un criterio
+get http://127.0.0.1:8000/pacientes/buscar_asignados
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYW50ZXphbmEiLCJyb2wiOiJFbmZlcm1lcmEiLCJleHAiOjE3NjQ1Njc2MjV9.xzOfXCDpKfX0ZBOXJC5DU-HNVSHskdbFzaP1i6rwkoA
+
+### Buscar componentes de un grupo
+get http://127.0.0.1:8000/listas/grupo/se_profesion
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlYW5hdmkiLCJyb2wiOiJBZG1pbmlzdHJhZG9yIiwiZXhwIjoxNzY0NTM4NDg5fQ.IM27vmJaIj0GAFqw5npJ-jNNCTpVqlChGI2Rx2zzZ9s
+
+### Crear empleado
+POST  http://127.0.0.1:8000/empleados/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlYW5hdmkiLCJyb2wiOiJBZG1pbmlzdHJhZG9yIiwiZXhwIjoxNzY0NTQ0MjIyfQ.TxM4-UEYwJ3yccv-BVffSqdrgaXrzJRj1h_u3Ng_dBc
+
+{
+  "tipo": "E",
+  "ci": "6987452",
+  "paterno": "Antezana",
+  "materno": "Camacho",
+  "nombres": "Angela Maria",
+  "fecha_nacimiento": "1991-02-15",
+  "sexo": "F",
+  "direccion":[
+    {
+      "tipo": "personal",
+      "direccion": {
+        "zona": "Villa Fátima",
+        "calle": "Calle Agustin Aspiazu",
+        "numero": "6352", 
+        "ciudad": "La Paz"
+      }
+    }
+  ],
+  "telefono": {
+    "celular": "58421187",
+    "fijo": "25252421"
+  },
+  "correo": {
+    "domicilio": "correo_altern@hotmail.com",
+    "personal": "correo@gmail.com"
+  },
+  "tipo_empleado": "M",
+  "profesion": 28,
+  "registro_profesional": "CE-524",
+  "cargo": "Enfemera"
+}
+
+### Crear usuario para el empleado
+POST http://127.0.0.1:8000/usuarios/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlYW5hdmkiLCJyb2wiOiJBZG1pbmlzdHJhZG9yIiwiZXhwIjoxNzY0NTYyODYxfQ.oI3L1H0KWnDg2lYQqeYLSL-jA0m34B3EpBvuE8hAwx8
+
+{
+  "nombre_usuario": "aantezana",
+  "clave": "1234567",
+  "id_rol": 3,
+  "id_empleado": 3
+}
+###
+POST http://127.0.0.1:8000/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlYW5hdmkiLCJyb2wiOiJBZG1pbmlzdHJhZG9yIiwi
+
+{
+  "tipo": "P",
+  "ci": "85741",
+  "paterno": "Gomez",
+  "materno": "Condarco",
+  "nombres": "Gabriela",
+  "fecha_nacimiento": "1995-06-20",
+  "sexo": "F",
+  "direccion": [
+    {
+      "tipo": "personal",
+      "direccion": {
+        "zona": "Irpavi",
+        "calle": "Calle Gamarra",
+        "numero": "8541", 
+        "ciudad": "La Paz"
+      }
+    }
+  ],
+  "telefono": {
+    "celular": "3654121",
+    "fijo": "6644124"
+  },
+  "correo": {
+    "domicilio": "ggomez@hotmail.com",
+    "personal": "condarcog@gmail.com"
+  },
+  "estado_civil": "SO",
+  "tipo_sangre": "O+",
+  "ocupacion": 12,
+  "nivel_estudios": 6,
+  "mun_nacimiento": 1,
+  "mun_residencia": 1,
+  "idioma_hablado": 1,
+  "idioma_materno": 1,
+  "autopertenencia": 1,
+  "gestion_comunitaria": "Gestion comunitaria"
+}

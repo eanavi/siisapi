@@ -17,19 +17,19 @@ router = APIRouter(prefix="/pacientes", tags=["Pacientes"])
 def listar_pacientes(db: Session = Depends(leer_bd), criterio: Optional[str] = None):
     pacientes = serv_paciente.leer_pacientes(db, criterio=criterio )
     return pacientes
-    
 
-@router.get("/asignados", response_model=list[PacienteListado])
-def listar_pacientes_asignados(
-        db: Session = Depends(leer_bd),
-        token: str = Depends(verificar_token)):
-    """
-    Lista los pacientes asignados al usuario autenticado.
-    """
+
+
+@router.get("/buscar_asignados", response_model=list[PacienteListado])
+def buscar_pacientes_asignados(
+    db: Session = Depends(leer_bd),
+    token: str = Depends(verificar_token),
+    criterio: Optional[str] = None):
+
     nombre_usuario = token["nombre_usuario"]
-    pacientes = serv_paciente.leer_pacientes_asignados(
-        db, nombre_usuario)
+    pacientes = serv_paciente.buscar_pacientes_asignados(db, nombre_usuario, criterio)
     return pacientes
+
 
 
 @router.get("/{id_paciente}", response_model=PacientePersona,
@@ -38,6 +38,8 @@ def listar_pacientes_asignados(
 def obtener_paciente(id_paciente: int, db: Session = Depends(leer_bd)):
     paciente = serv_paciente.leer_paciente_con_persona(db, id_paciente)
     return paciente
+
+
 
 
 @router.post("/", response_model=int,

@@ -79,14 +79,6 @@ class PacientePersona(PersonaBase):
         None, title="Nivel de Estudios",
         description="Nivel de estudios del paciente",
         json_schema_extra={"example": 1})
-    mun_nacimiento: int = Field(
-        ..., title="Municipio de Nacimiento",
-        description="Municipio de nacimiento del paciente",
-        json_schema_extra={"example": 1})
-    mun_residencia: int = Field(
-        ..., title="Municipio de Residencia",
-        description="Municipio de residencia del paciente",
-        json_schema_extra={"example": 1})
     idioma_hablado: int = Field(
         ..., title="Idioma Hablado",
         description="Idioma hablado por el paciente",
@@ -112,6 +104,11 @@ class PacienteListado(BaseModel):
         ..., title="Id Paciente",
         description="Identificador unico del paciente",
         json_schema_extra={"example": 1})
+    id_reserva: int = Field(
+        ..., title="Id Reserva",
+        description="Identificador unico de la reserva",
+        json_schema_extra={"example": 1}
+    )
     ci: str = Field(
         ..., title="CI",
         description="Cedula de identidad del paciente",
@@ -132,6 +129,11 @@ class PacienteListado(BaseModel):
         ..., title="Edad",
         description="Edad del paciente en años",
         json_schema_extra={"example": 30})
+    sexo: str = Field(
+        ..., title="Sexo",
+        description="Sexo del paciente",
+        json_schema_extra={"example": "M"}
+    )
     fecha_reserva: Optional[date] = Field(
         None, title="Fecha de Reserva",
         description="Fecha de reserva del paciente",

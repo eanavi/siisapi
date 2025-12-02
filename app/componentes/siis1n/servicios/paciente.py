@@ -5,6 +5,7 @@ from app.componentes.siis1n.esquemas.paciente import PacientePersona
 from app.componentes.siis1n.servicios.persona import ServicioPersona
 from fastapi import HTTPException, status
 from typing import Optional
+from datetime import date
 from .base import ServicioBase
 from ..modelos.paciente import Paciente
 
@@ -60,8 +61,6 @@ class ServicioPaciente(ServicioBase):
                 "tipo_sangre": paciente_persona.tipo_sangre,
                 "ocupacion": paciente_persona.ocupacion,
                 "nivel_estudios": paciente_persona.nivel_estudios,
-                "mun_nacimiento": paciente_persona.mun_nacimiento,
-                "mun_residencia": paciente_persona.mun_residencia,
                 "idioma_hablado": paciente_persona.idioma_hablado,
                 "idioma_materno": paciente_persona.idioma_materno,
                 "autopertenencia": paciente_persona.autopertenencia,
@@ -98,8 +97,6 @@ class ServicioPaciente(ServicioBase):
                 "tipo_sangre": paciente.tipo_sangre,
                 "ocupacion": paciente.ocupacion,
                 "nivel_estudios": paciente.nivel_estudios,
-                "mun_nacimiento": paciente.mun_nacimiento,
-                "mun_residencia": paciente.mun_residencia,
                 "idioma_hablado": paciente.idioma_hablado,
                 "idioma_materno": paciente.idioma_materno,
                 "autopertenencia": paciente.autopertenencia,
@@ -150,8 +147,6 @@ class ServicioPaciente(ServicioBase):
                 "tipo_sangre": paciente_persona.tipo_sangre,
                 "ocupacion": paciente_persona.ocupacion,
                 "nivel_estudios": paciente_persona.nivel_estudios,
-                "mun_nacimiento": paciente_persona.mun_nacimiento,
-                "mun_residencia": paciente_persona.mun_residencia,
                 "idioma_hablado": paciente_persona.idioma_hablado,
                 "idioma_materno": paciente_persona.idioma_materno,
                 "autopertenencia": paciente_persona.autopertenencia,
@@ -165,21 +160,23 @@ class ServicioPaciente(ServicioBase):
                                 detail=f"Error al actualizar el empleado: {str(e)}")
 
 
-    def leer_pacientes_asignados(self, db: Session, nombre_usuario: str):
+                                
+    def buscar_pacientes_asignados(self, db: Session, nombre_usuario: str, criterio: str):
         """
-        Lista los pacientes asignados al usuario autenticado.
+        Busca los pacientes asignados al usuario autenticado.
         """
+        hoy = date.today().strftime("%Y-%m-%d")
         try:
-            pacientes = db.execute(text(f""" 
-                                        select * from public.obtener_pacientes_por_usuario(:nombre_usuario)"""),
-                                  {'nombre_usuario': nombre_usuario})
-    
+            pacientes = db.execute(text(f""" select * from public.buscar_pacientes_por_usuario(:nombre_usuario, :criterio, :fecha)"""),
+                                  {'nombre_usuario': nombre_usuario,
+                                   'criterio': criterio,
+                                   'fecha': hoy})
+                                   
             filas = pacientes.mappings().all()
             if not filas:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                     detail="No se encontraron pacientes asignados")
-
             return filas
         except SQLAlchemyError as e:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                detail=f"Error al obtener los pacientes asignados: {str(e)}")
+                                detail=f"Error al buscar los pacientes asignados: {str(e)}")                           

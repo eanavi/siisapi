@@ -12,8 +12,8 @@ class Consulta(ModeloBase):
 
     id_consulta: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True, index=True)
-    id_paciente: Mapped[int] = mapped_column(
-        Integer, ForeignKey('paciente.id_paciente'), nullable=False)
+    id_reserva: Mapped[int] = mapped_column(
+        Integer, ForeignKey('reserva.id_reserva'), nullable=False)
     id_medico: Mapped[int] = mapped_column(
         Integer, ForeignKey('empleado.id_empleado'), nullable=False)
     id_enfermera: Mapped[Optional[int]] = mapped_column(

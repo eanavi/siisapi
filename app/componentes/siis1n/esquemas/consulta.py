@@ -7,9 +7,9 @@ from typing import List, Optional
 class ConsultaBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id_paciente: int = Field(
-        ..., title="Id Paciente",
-        description="Identificador del paciente", 
+    id_reserva: int = Field(
+        ..., title="Id Reserva",
+        description="Identificador de la reserva", 
         json_schema_extra={"example": 1}
     )
     id_medico: int = Field(

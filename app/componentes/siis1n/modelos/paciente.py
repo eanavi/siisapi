@@ -21,8 +21,6 @@ class Paciente(ModeloBase):
         CHAR(2), nullable=True, default="SO")
     ocupacion: Mapped[Optional[int]] = mapped_column(Integer)
     nivel_estudios: Mapped[Optional[int]] = mapped_column(Integer)
-    mun_nacimiento: Mapped[int] = mapped_column(Integer, nullable=False)
-    mun_residencia: Mapped[int] = mapped_column(Integer, nullable=False)
     idioma_hablado: Mapped[int] = mapped_column(Integer, nullable=False)
     idioma_materno: Mapped[int] = mapped_column(Integer, nullable=False)
     autopertenencia: Mapped[int] = mapped_column(Integer, nullable=False)

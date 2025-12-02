@@ -68,12 +68,7 @@ def crear_usuario(
         token: str = Depends(verificar_token)):
     usuario_reg = token["nombre_usuario"]
     ip = request.client.host
-    usuario_creado = serv_usuario.crear(
-        db=db,
-        obj=usuario.model_dump(),
-        usuario_reg=usuario_reg,
-        ip_reg=ip
-    )
+    usuario_creado = serv_usuario.crear_usuario(db, usuario, usuario_reg, ip)
     return usuario_creado
 
 
