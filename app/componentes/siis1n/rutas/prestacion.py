@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from app.componentes.siis1n.servicios.prestacion import ServicioPrestacion
-from app.componentes.siis1n.esquemas.prestacion import PrestacionPaginada, PrestacionCreate, PrestacionResponse
+from app.componentes.siis1n.esquemas.prestacion import PrestacionPaginada, PrestacionCreate, PrestacionResponse, PrestacionLista
 from app.nucleo.baseDatos import leer_bd
 from app.nucleo.seguridad import verificar_token
 
@@ -87,3 +87,10 @@ def eliminar_prestacion(
         usuario_reg=usuario,
         ip_reg=ip)
     return prestacion
+
+@router.get("/perfil/{id_empleado}", response_model=list[PrestacionLista],
+            summary="Listar prestaciones por tipo de perfil", 
+            description="Lista todas las prestaciones asociadas a un tipo de perfil")
+def listar_prestaciones_por_perfil(id_empleado: int,db: Session = Depends(leer_bd)):
+    lista_prestaciones = serv_prestacion.leer_por_tipo_perfil(db, id_empleado)
+    return lista_prestaciones

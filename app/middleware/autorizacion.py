@@ -14,22 +14,26 @@ PERMISOS_ROLES = {
         "/consultas": ["Administrador", "Operador", "Medico", "Enfermera"],
         "/empleados": ["Administrador", "Operador"],
         "/grupos": ["Administrador", "Operador"],
-        "/listas": ["Administrador"],
+        "/listas": ["Administrador", "Operador"],
         "/soaps": ["Administrador"],
+        "/fhir":["Administrador"],
         "/pacientes": ["Administrador", "Operador", "Medico", "Enfermera"],
         "/prestaciones": ["Administrador", "Operador", "Medico"],
         "/menus": ["Administrador", "Operador", "Medico", "Enfermera"],
+        "/turnos": ["Administrador", "Operador", "Medico", "Enfermera"],
+        "/reservas": ["Administrador", "Operador", "Medico", "Enfermera"],
 
     },
     "POST": {
         "/usuarios": ["Administrador", "Operador"],
         "/consultas": ["Administrador","Medico", "Enfermera"],
         "/personas": ["Administrador"],  # Solo médicos pueden crear consultas
-        "/grupos": ["Administrador"],
+        "/grupos": ["Administrador", "Operador"],
         "/empleados": ["Administrador", "Operador"],
-        "/listas": ["Administrador"],
-        "/pacientes": ["Administrador", "Medico", "Enfermera"],
+        "/listas": ["Administrador", "Operador"],
+        "/pacientes": ["Administrador", "Operador", "Medico", "Enfermera"],
         "/prestaciones": ["Administrador", "Operador", "Medico"],
+        "/turnos": ["Administrador", "Operador", "Medico", "Enfermera"],
     },
     "PUT": {
         "/usuarios": ["Administrador", "Operador", "Medico", "Enfermera"],
@@ -38,9 +42,12 @@ PERMISOS_ROLES = {
         "/consultas": ["Medico", "Enfermera"],  # Solo médicos pueden modificar consultas
         "/grupos": ["Administrador"],
         "/empleados": ["Administrador"],
-        "/listas": ["Administrador"],
+        "/listas": ["Administrador", "Operador"],
         "/pacientes": ["Administrador", "Operador", "Medico", "Enfermera"],
         "/prestaciones": ["Administrador", "Operador", "Medico", "Enfermera"],
+        "/menus": ["Administrador", "Operador", "Medico", "Enfermera"],
+        "/reservas": ["Administrador", "Operador", "Medico", "Enfermera"],
+
     },
     "DELETE": {
         "/usuarios": ["Administrador"],
@@ -50,6 +57,7 @@ PERMISOS_ROLES = {
         "/grupos": ["Administrador"],
         "/listas": ["Administraor"],
         "/pacientes": ["Administrador"],
+        "/turnos": ["Administrador"],
     }
 }
 

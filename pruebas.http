@@ -3,7 +3,7 @@ POST http://127.0.0.1:8000/auth/login
 Content-Type: application/x-www-form-urlencoded
 Accept: application/json
 
-username=aantezana&password=1234567
+username=eanavi&password=vicho.1368
 
 ### Informacion usuairo logueado
 GET http://127.0.0.1:8000/usuarios/informacion/aantezana
@@ -26,97 +26,178 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYW50ZXphb
 
 ### Buscar componentes de un grupo
 get http://127.0.0.1:8000/listas/grupo/se_profesion
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlYW5hdmkiLCJyb2wiOiJBZG1pbmlzdHJhZG9yIiwiZXhwIjoxNzY0NTM4NDg5fQ.IM27vmJaIj0GAFqw5npJ-jNNCTpVqlChGI2Rx2zzZ9s
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbWVuZG96YSIsInJvbCI6Ik9wZXJhZG9yIiwiZXhwIjoxNzY5MjI2ODg2fQ.zt9b5t3a9mrlD0E_pgHcs67LO5y9-x8q0WVt0AoKM64
 
 ### Crear empleado
 POST  http://127.0.0.1:8000/empleados/
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlYW5hdmkiLCJyb2wiOiJBZG1pbmlzdHJhZG9yIiwiZXhwIjoxNzY0NTQ0MjIyfQ.TxM4-UEYwJ3yccv-BVffSqdrgaXrzJRj1h_u3Ng_dBc
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlYW5hdmkiLCJyb2wiOiJBZG1pbmlzdHJhZG9yIiwiZXhwIjoxNzY5MTE5MjM0fQ.8Ntyufcp1Jnf-ojb6O5-nanLha4y2GgOGv3gX_qgDFw
 
 {
   "tipo": "E",
-  "ci": "6987452",
-  "paterno": "Antezana",
-  "materno": "Camacho",
+  "ci": "985743a",
+  "paterno": "Mendoza",
+  "materno": "Arteaga",
   "nombres": "Angela Maria",
-  "fecha_nacimiento": "1991-02-15",
+  "fecha_nacimiento": "1988-05-06",
   "sexo": "F",
   "direccion":[
     {
       "tipo": "personal",
       "direccion": {
-        "zona": "Villa Fátima",
-        "calle": "Calle Agustin Aspiazu",
-        "numero": "6352", 
+        "zona": "Villa Concepción",
+        "calle": "Av. Circunvalación",
+        "numero": "6547", 
         "ciudad": "La Paz"
       }
     }
   ],
   "telefono": {
-    "celular": "58421187",
-    "fijo": "25252421"
+    "celular": "8745217",
+    "fijo": "2525324"
   },
   "correo": {
-    "domicilio": "correo_altern@hotmail.com",
-    "personal": "correo@gmail.com"
+    "domicilio": "angelaArt@hotmail.com",
+    "personal": "angelaArt@gmail.com"
   },
-  "tipo_empleado": "M",
-  "profesion": 28,
-  "registro_profesional": "CE-524",
-  "cargo": "Enfemera"
+  "tipo_empleado": "A",
+  "profesion": 34,
+  "registro_profesional": "",
+  "cargo": "Estadístico"
 }
 
 ### Crear usuario para el empleado
 POST http://127.0.0.1:8000/usuarios/
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlYW5hdmkiLCJyb2wiOiJBZG1pbmlzdHJhZG9yIiwiZXhwIjoxNzY0NTYyODYxfQ.oI3L1H0KWnDg2lYQqeYLSL-jA0m34B3EpBvuE8hAwx8
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlYW5hdmkiLCJyb2wiOiJBZG1pbmlzdHJhZG9yIiwiZXhwIjoxNzY5MTE5MjM0fQ.8Ntyufcp1Jnf-ojb6O5-nanLha4y2GgOGv3gX_qgDFw
 
 {
-  "nombre_usuario": "aantezana",
+  "nombre_usuario": "amendoza",
   "clave": "1234567",
-  "id_rol": 3,
-  "id_empleado": 3
+  "id_rol": 5,
+  "id_empleado": 4
 }
 ###
-POST http://127.0.0.1:8000/
+POST http://127.0.0.1:8000/pacientes/
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlYW5hdmkiLCJyb2wiOiJBZG1pbmlzdHJhZG9yIiwi
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbWVuZG96YSIsInJvbCI6Ik9wZXJhZG9yIiwiZXhwIjoxNzY5MjM1Mzc3fQ.KAHCnWLIy9ZM6kJZeCbU1KsnB1uwx5ot4WU3i9hm58A
 
 {
-  "tipo": "P",
-  "ci": "85741",
-  "paterno": "Gomez",
-  "materno": "Condarco",
-  "nombres": "Gabriela",
-  "fecha_nacimiento": "1995-06-20",
-  "sexo": "F",
-  "direccion": [
-    {
-      "tipo": "personal",
-      "direccion": {
-        "zona": "Irpavi",
-        "calle": "Calle Gamarra",
-        "numero": "8541", 
-        "ciudad": "La Paz"
+   "tipo":"P",
+   "ci":"8574511",
+   "paterno":"Carvajal",
+   "materno":"Mendoza",
+   "nombres":"Jorge",
+   "fecha_nacimiento":"2008-06-26",
+   "sexo":"M",
+   "estado_civil":"SO",
+   "tipo_sangre":"A+",
+   "direccion":[
+      {
+         "direccion":{
+            "calle":"Calle Mendoza",
+            "numero":"8541",
+            "zona":"Villa Copacabana",
+            "ciudad":"La Paz"
+         },
+         "tipo":"personal"
       }
-    }
-  ],
-  "telefono": {
-    "celular": "3654121",
-    "fijo": "6644124"
-  },
-  "correo": {
-    "domicilio": "ggomez@hotmail.com",
-    "personal": "condarcog@gmail.com"
-  },
-  "estado_civil": "SO",
-  "tipo_sangre": "O+",
-  "ocupacion": 12,
-  "nivel_estudios": 6,
-  "mun_nacimiento": 1,
-  "mun_residencia": 1,
-  "idioma_hablado": 1,
-  "idioma_materno": 1,
-  "autopertenencia": 1,
-  "gestion_comunitaria": "Gestion comunitaria"
+   ],
+   "telefono":{
+      "celular":"96854966",
+      "fijo":"9652"
+   },
+   "correo":{
+      "personal":"jcarvajal@gmail.com",
+      "domicilio":"uno@gmail.com"
+   },
+   "ocupacion":13,
+   "nivel_estudios":3,
+   "idioma_hablado":1,
+   "idioma_materno":1,
+   "autopertenencia":7,
+   "gestion_comunitaria":""
 }
+
+
+
+### Consulta de turno
+get http://127.0.0.1:8000/turnos/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlYW5hdmkiLCJyb2wiOiJBZG1pbmlzdHJhZG9yIiwiZXhwIjoxNzY1MTUyNTAxfQ.cPfIvtvsclRbqzG-I4frEF43x5V1aqnKMsPvaCrZXTo
+
+### Crear Consulta
+POST http://127.0.0.1:8000/consultas/reserva/1/paciente/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYW50ZXphbmEiLCJyb2wiOiJFbmZlcm1lcmEiLCJleHAiOjE3NjUzNTE5NTF9.oqqSybgDzK8QKvN4Lspcq8G6Zs4fHL0maquCRz5Shz4
+
+{
+  "id_reserva": 0,
+  "id_enfermera": null,
+  "id_paciente": null,
+  "fecha": "2025-05-12T14:30:00",
+  "peso": 70.5,
+  "talla": 1.75,
+  "temperatura": 37,
+  "presion": "120/80",
+  "frecuencia_cardiaca": 80,
+  "frecuencia_respiratoria": 16,
+  "saturacion": 98,
+  "inyectables": 1,
+  "sueros": 0,
+  "curaciones": 1,
+  "otras_enf": 0
+}
+
+###
+get http://127.0.0.1:8000/consultas/reserva/2
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqcGVyZXoiLCJyb2wiOiJNZWRpY28iLCJleHAiOjE3NjUzNTgwNDN9.wAb6-voxRolKl1jnbS584o0TI9_EOgx4tQ7YaSKWGRM
+
+
+###
+put http://127.0.0.1:8000/reservas/estado/2?estado=M
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqcGVyZXoiLCJyb2wiOiJNZWRpY28iLCJleHAiOjE3NjU5NjI4OTV9.nxDgCRlhBJrdyfgWnWJQ-GrGgDFBpbbJpCT5PkW6EQ4
+
+### Listar turnos de una prestación
+GET http://127.0.0.1:8000/turnos/fecha/2026-01-16
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqcGVyZXoiLCJyb2wiOiJNZWRpY28iLCJleHAiOjE3Njg3MTYwOTd9.Yx9fZJwsnidDbCXz1rf1hTN8T_-95DEFZEvRW6-VUtE
+
+
+###Listar pacientes con paginacion
+GET http://127.0.0.1:8000/pacientes/?pagina=1&tamanio=10&criterio=7852
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlYW5hdmkiLCJyb2wiOiJBZG1pbmlzdHJhZG9yIiwiZXhwIjoxNzY5MTc0ODI5fQ.NtpSFKMOu-n6gpvqRC2CA6yvYwDmCzR0aD_4YwNm47M
+
+
+###Listar pacientes con paginacion
+GET http://127.0.0.1:8000/empleados/?pagina=1&tamanio=10&criterio=Perez
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbWVuZG96YSIsInJvbCI6Ik9wZXJhZG9yIiwiZXhwIjoxNzY5NDQ4MDkyfQ.Ti-efUlvZ9zG-bh1BS9eJSZJxk6alBVWmKTH0DYufpY
+
+###Listar pacientes con paginacion
+GET http://127.0.0.1:8000/prestaciones/perfil/2
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbWVuZG96YSIsInJvbCI6Ik9wZXJhZG9yIiwiZXhwIjoxNzY5NDU3MDc1fQ.vdwFZLnsz68tZanWe8gf9di2mkIWQrEZcDphjrTcYxE
+
+###Listar pacientes con paginacion
+POST  http://127.0.0.1:8000/turnos/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbWVuZG96YSIsInJvbCI6Ik9wZXJhZG9yIiwiZXhwIjoxNzY5NDgzNTI4fQ.7ppMpbQIvD_Y6kxFDoAEjKeh1tjbuz3ZKMvMmkxFEr8
+
+{
+  "id_medico": 2,
+  "id_prestacion": 1,
+  "fecha_inicio": "2026-01-26",
+  "fecha_final": "2026-02-28",
+  "hora_inicio": "08:30:00",
+  "hora_final": "14:30:00",
+  "dia_semana": ["M"]
+}
+
+###Listar modulo SOAPS
+get http://127.0.0.1:8000/fhir/Patient/9857315
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlYW5hdmkiLCJyb2wiOiJBZG1pbmlzdHJhZG9yIiwiZXhwIjoxNzcwOTE3Njg1fQ.uy7r9ibZg-Qd6etdaLSIiI1KQAWS5xDNm46VPMajU84

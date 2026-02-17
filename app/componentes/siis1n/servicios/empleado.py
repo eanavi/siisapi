@@ -64,6 +64,30 @@ class ServicioEmpleado(ServicioBase):
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                 detail=f"Error al crear el empleado: {str(e)}")
 
+    def leer_empleados_paginados(self, db: Session, pagina:int, tamanio:int, criterio:Optional[str] = None):
+        try:
+            offset = (pagina - 1) * tamanio
+            query = text(f"""select * from public.buscar_empleado(:criterio, :p_limit, :p_offset)""")
+            params = {"criterio": criterio, "p_limit": tamanio, "p_offset": offset}
+            resultado = db.execute(query, params)
+
+            empleados = resultado.mappings().all()
+
+            if not empleados:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                    detail="No se encontraron empleados")
+            
+            return {
+                "total": empleados[0]['total_count'],
+                "pagina": pagina,
+                "tamanio": tamanio,
+                "items": empleados
+            }
+
+        except SQLAlchemyError as e:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail=f"Error al obtener empleados: {str(e)}")
+
     def leer_empleado_con_persona(self, db: Session, id_empleado: int) -> EmpleadoPersona:
         try:
             empleado = self.leer(db, id_empleado)

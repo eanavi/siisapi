@@ -32,7 +32,8 @@ def crear_motor_mssql(servidor: str, base_datos: str, usuario: str, clave: str, 
     return motor
 
 
-def obtener_sesion_mssql(servidor: str, base_datos: str, usuario: str, clave: str, puerto: int) -> Generator[Session, None, None]:
+def obtener_sesion_mssql(servidor: str, base_datos: str, 
+                         usuario: str, clave: str, puerto: int) -> Generator[Session, None, None]:
     motor = crear_motor_mssql(servidor, base_datos, usuario, clave, puerto)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=motor)
     db: Session = SessionLocal()

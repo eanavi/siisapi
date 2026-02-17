@@ -1,3 +1,5 @@
+from datetime import date
+
 def validar_fecha_de_edad(anio: int, mes: int, dia: int) -> None:
     if not isinstance(anio, int) or anio < 0:
         raise ValueError("Los años deben ser un número entero no negativo.")
@@ -16,3 +18,16 @@ def validar_fecha_de_edad(anio: int, mes: int, dia: int) -> None:
     if not isinstance(dia, int) or dia < 0 or dia > max_dias:
         raise ValueError(
             f"Los días deben ser un número entero entre 0 y {max_dias}.")
+
+
+def es_menor_de_un_anio(fecha_nacimiento: date) -> bool:
+    hoy = date.today()
+    return ( hoy - fecha_nacimiento).days < 365
+
+
+def generar_codigo_rn(id_centro: int) -> str:
+    """
+    RN-<ID_CENTRO>-<AÑO>-<TIMESTAMP>
+    """
+    from datetime import datetime
+    return f"RN-{id_centro}-{datetime.now().strftime('%Y%m%d%H%M%S')}"

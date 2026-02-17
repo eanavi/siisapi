@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends,  Query, Request
 from sqlalchemy.orm import Session
 from app.componentes.siis1n.servicios.empleado import ServicioEmpleado
 from app.componentes.siis1n.esquemas.empleado import RespuestaPaginada, \
-    EmpleadoPersona, EmpleadoResponse, EmpleadoB
+    EmpleadoPersona, EmpleadoResponse, EmpleadoB, EmpleadoLista, EmpleadoPaginada
 from app.nucleo.seguridad import verificar_token
 from app.nucleo.conexion import obtener_id_centro
 from app.nucleo.baseDatos import leer_bd
@@ -12,6 +12,19 @@ serv_empleado = ServicioEmpleado()
 
 router = APIRouter(prefix="/empleados", tags=["Empleados"])
 
+@router.get("/", response_model=EmpleadoPaginada, 
+summary=f"Listar todas los empleados del area médica, el criterio es opcional",
+description="Lista todos los empleados del área médica registrados en el sistema, con paginación")
+def listar_empleados_paginados(
+    pagina: int = Query(1, alias="pagina", ge=1,
+                        description=f"Numero de pagina a mostrar"),
+    tamanio: int = Query(10, alias="tamanio", ge=1, le=50,
+                         description=f"Cantidad de registros a mostrar"),
+    db: Session = Depends(leer_bd),
+    criterio: Optional[str] = None
+):
+    empleados = serv_empleado.leer_empleados_paginados(db, pagina, tamanio, criterio=criterio)
+    return empleados
 
 @router.get("/listar/", response_model=List[EmpleadoB], summary="Listar todas los Empleados",
             description="Lista todas los empleados registrados en el sistema")

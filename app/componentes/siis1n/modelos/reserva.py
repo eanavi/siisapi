@@ -9,7 +9,7 @@ class Reserva(ModeloBase):
     id_reserva: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True)
     id_turno: Mapped[int] = mapped_column(
-        Integer, ForeignKey('turno.id_turno'))
+        Integer, ForeignKey('public.turno.id_turno'), nullable=False)
     id_paciente: Mapped[int] = mapped_column(
         Integer, ForeignKey('paciente.id_paciente'))
     fecha_reserva: Mapped[Date] = mapped_column(Date)

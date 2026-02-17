@@ -58,6 +58,46 @@ class EmpleadoPersona(PersonaBase):
         description="Cargo del empleado",
         json_schema_extra={"example": "Medico"})
 
+class EmpleadoLista(BaseModel):
+    id_empleado: int = Field(
+        ..., title="Id Empleado",
+        description="Identificador unico del empleado",
+        json_schema_extra={"example": 1})
+    ci: Optional[str] = Field(
+        None, title="Carnet de Identidad",
+        description="Numero de carnet de identidad",
+        json_schema_extra={"example": "548732"})
+    paterno: Optional[str] = Field(
+        None, title="Apellido Paterno",
+        description="Apellido paterno de la persona",
+        json_schema_extra={"example": "Fernández"})
+    materno: Optional[str] = Field(
+        None, title="Apellido Materno",
+        description="Apellido materno de la persona",
+        json_schema_extra={"example": "Pérez"})
+    nombres: str = Field(
+        ..., title="Nombres",
+        description="Nombres de la persona",
+        json_schema_extra={"example": "Juan Antonio"})
+    fecha_nacimiento: date = Field(
+        ..., title="Fecha de Nacimiento",
+        description="Fecha de nacimiento de la persona",
+        json_schema_extra={"example": "1990-01-01"})
+    cargo: Optional[str] = Field(
+        None, title="Cargo",
+        description="Cargo del empleado",
+        json_schema_extra={"example": "Medico"})
+    profesion: Optional[str] = Field(
+        None, title="Profesion",
+        description="Profesion del empleado",
+        json_schema_extra={"example": "Medico"})
+    total_count: Optional[int] = Field(
+        None, title="Total Count",
+        description="Total de empleados en la consulta",
+        json_schema_extra={"example": 100})
+    
+
+
 class EmpleadoB(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id_persona: UUID4 = Field(
@@ -125,3 +165,12 @@ class RespuestaPaginada(BaseModel):
     pagina: int
     tamanio: int
     items: List[EmpleadoResponse]
+
+
+class EmpleadoPaginada(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    total: int
+    pagina: int
+    tamanio: int
+    items: List[EmpleadoLista]

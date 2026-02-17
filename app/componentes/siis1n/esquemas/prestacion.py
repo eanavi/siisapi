@@ -42,6 +42,21 @@ class PrestacionBase(BaseModel):
 class PrestacionCreate(PrestacionBase):
     pass
 
+class PrestacionLista(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id_prestacion: int = Field(
+        ..., title="Id Prestacion",
+        description="Identificador unico de la prestacion",
+        json_schema_extra={"example": 1})
+    nombre_prestacion: str = Field(
+        ..., title="Nombre",
+        description="Nombre de la prestacion",
+        json_schema_extra={"example": "Consulta Medica"})
+    sigla: str = Field(
+        ..., title="Sigla",
+        description="Sigla de la prestacion",
+        json_schema_extra={"example": "CE"})
+
 
 class PrestacionResponse(PrestacionBase):
     model_config = ConfigDict(from_attributes=True)

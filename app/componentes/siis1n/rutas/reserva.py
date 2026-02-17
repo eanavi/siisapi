@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.orm import Session
+from datetime import datetime
 from app.componentes.siis1n.servicios.reserva import ServicioReserva
 from app.componentes.siis1n.modelos.reserva import Reserva
 from app.componentes.siis1n.esquemas.reserva import ReservaResponse, RespuestaPaginada, ReservaCreate
@@ -125,3 +126,28 @@ def listar_reservas_por_paciente(
     reservas = serv_reserva.leer_reserva_paciente(
         db, id_paciente, pagina, tamanio)
     return reservas
+
+@router.put('/estado/{id_reserva}',
+            response_model=ReservaResponse,
+            summary=f"Actualizar el estado de una reserva",
+            description=f"Actualiza el estado de una reserva registrada en el sistema")
+def actualizar_estado_reserva(
+        id_reserva: int,
+        estado: str,
+        request: Request,
+        db: Session = Depends(leer_bd),
+        token: str = Depends(verificar_token)
+        ):
+    # Usamos el nuevo método que no filtra por estado_reg='V'
+    reserva = serv_reserva.leer_sin_filtro_estado(db, id_reserva)
+    
+    usuario = token["nombre_usuario"]
+    ip = request.client.host
+    
+    reserva.estado_reg = estado
+    reserva.usuario_reg = usuario
+    reserva.fecha_reg = datetime.now()
+    reserva.ip_mod = ip
+    db.commit()
+    db.refresh(reserva)
+    return reserva

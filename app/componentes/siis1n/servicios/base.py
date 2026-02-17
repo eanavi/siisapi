@@ -60,6 +60,20 @@ class ServicioBase(Generic[T]):
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                 detail=f"Error al leer el objeto: {str(e)}")
 
+    def leer_sin_filtro_estado(self, db: Session, id: Union[int, UUID]) -> Optional[T]:
+        """Lee un objeto por su ID sin filtrar por estado_reg."""
+        try:
+            db_obj = db.query(self.modelo).filter(
+                getattr(self.modelo, self.id_column) == id
+            ).first()
+            if not db_obj:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                    detail=f"Objeto no encontrado con id {id}")
+            return db_obj
+        except SQLAlchemyError as e:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail=f"Error al leer el objeto: {str(e)}")
+
     def leer_todos(
             self,
             db: Session,

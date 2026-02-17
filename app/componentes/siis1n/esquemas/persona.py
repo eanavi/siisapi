@@ -61,7 +61,7 @@ class PersonaBase(BaseModel):
     direccion: Optional[List[DireccionTipo]] = Field(
         None, title="Direccion",
         description="Direccion de la persona",
-        json_schema_extra={"example": [{"tipo": "personal", "direccion": {"zona": "Villa Dolores", "calle": "Av. 6 de Agosto", "numero": "123"}}]})
+        json_schema_extra={"example": [{"tipo": "personal", "direccion": {"zona": "Villa Dolores", "calle": "Av. 6 de Agosto", "numero": "123", "ciudad": "La Paz", }}]})
     telefono: Optional[Dict[str, str]] = Field(
         None, title="Telefono", description="Numero de telefono de la persona",
         json_schema_extra={"example": {"celular": "62418210", "fijo": "987654321"}})

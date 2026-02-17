@@ -4,19 +4,20 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 
 
-class ConsultaBase(BaseModel):
+class ConsultaEnfermeria(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-
+    
     id_reserva: int = Field(
         ..., title="Id Reserva",
         description="Identificador de la reserva", 
         json_schema_extra={"example": 1}
     )
-    id_medico: int = Field(
-        ..., title="Id Medico", 
-        description="Identificador del médico", 
+    id_medico: Optional[int] = Field(
+        None, title="Id Médico", 
+        description="Identificador del médico",
         json_schema_extra={"example": 2}
     )
+
     id_enfermera: Optional[int] = Field(
         None, title="Id Enfermera", 
         description="Identificador de la enfermera", 
@@ -82,12 +83,14 @@ class ConsultaBase(BaseModel):
         description="Número de otras enfermedades", 
         json_schema_extra={"example": 0}
     )
+
+class ConsultaMod(BaseModel):
     motivo: Optional[str] = Field(
         None, title="Motivo de Consulta", 
         description="Motivo de la consulta", 
         json_schema_extra={"example": "Dolor de cabeza"}
     )
-    ex_fisio: Optional[str] = Field(
+    ex_fisico: Optional[str] = Field(
         None, title="Examen Físico", 
         description="Resultado del examen físico", 
         json_schema_extra={"example": "Paciente alerta y orientado"}
@@ -127,6 +130,57 @@ class ConsultaBase(BaseModel):
         description="Observaciones adicionales", 
         json_schema_extra={"example": "Seguimiento en 7 días"}
     )
+
+class ConsultaBase(ConsultaEnfermeria):
+    model_config = ConfigDict(from_attributes=True)
+
+    motivo: Optional[str] = Field(
+        None, title="Motivo de Consulta", 
+        description="Motivo de la consulta", 
+        json_schema_extra={"example": "Dolor de cabeza"}
+    )
+    ex_fisico: Optional[str] = Field(
+        None, title="Examen Físico", 
+        description="Resultado del examen físico", 
+        json_schema_extra={"example": "Paciente alerta y orientado"}
+    )
+    diagnostico: Optional[str] = Field(
+        None, title="Diagnóstico", 
+        description="Diagnóstico de la consulta", 
+        json_schema_extra={"example": "Cefalea"}
+    )
+    tratamiento: Optional[str] = Field(
+        None, title="Tratamiento", 
+        description="Tratamiento indicado", 
+        json_schema_extra={"example": "Paracetamol 500mg"}
+    )
+    dx_cie10: Optional[List[Optional[str]]] = Field(
+        None, title="Diagnósticos CIE-10", 
+        description="Lista de códigos CIE-10", 
+        json_schema_extra={"example": ["R51"]}
+    )
+    mortalidad: Optional[str] = Field(
+        None, title="Mortalidad", 
+        description="Indicador de mortalidad", 
+        json_schema_extra={"example": "N"}
+    )
+    referencia: Optional[int] = Field(
+        None, title="Referencia", 
+        description="ID de referencia si aplica", 
+        json_schema_extra={"example": 4}
+    )
+    subsidio: Optional[int] = Field(
+        None, title="Subsidio", 
+        description="Indicador de subsidio", 
+        json_schema_extra={"example": 0}
+    )
+    observaciones: Optional[str] = Field(
+        None, title="Observaciones", 
+        description="Observaciones adicionales", 
+        json_schema_extra={"example": "Seguimiento en 7 días"}
+    )
+
+
 
 class ConsultaCreate(ConsultaBase):
     pass

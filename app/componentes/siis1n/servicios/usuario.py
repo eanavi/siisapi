@@ -3,9 +3,11 @@ from sqlalchemy.sql import text
 from fastapi import HTTPException, status
 from .base import ServicioBase
 from app.componentes.siis1n.modelos.usuario import Usuario
-from app.nucleo.seguridad import verificar_clave, crear_token_acceso, generar_clave_encriptata
+from app.nucleo.seguridad import verificar_clave, crear_token_acceso, \
+generar_clave_encriptata
 from app.nucleo.conexion_cache import guardar_datos_conexion
-from app.componentes.siis1n.esquemas.usuario import InformacionUsuario, UsuarioCreate
+from app.componentes.siis1n.esquemas.usuario import InformacionUsuario, \
+    UsuarioCreate
 from sqlalchemy.exc import SQLAlchemyError
 
 
@@ -16,8 +18,10 @@ class ServicioUsuario(ServicioBase):
 
     def autenticar(self, db: Session, nombre_usuario: str, clave: str):
         """ Autenticar al usuario verificando credenciales """
-        consulta = db.execute(text(f""" select nombre_usuario, clave, nombre_completo, centro_salud, id_centro,
-                                     usuario_bd, clave_bd, direccion_bd, puerto, nombre_rol 
+        consulta = db.execute(text(f""" select nombre_usuario, clave, 
+                                    nombre_completo, centro_salud, id_centro,
+                                     usuario_bd, clave_bd, direccion_bd, 
+                                     puerto, nombre_rol 
                                      from fn_usuario(:criterio)
                                      """), {'criterio': nombre_usuario})
         usuario = consulta.mappings().first()
@@ -42,7 +46,8 @@ class ServicioUsuario(ServicioBase):
 
         return token
     
-    def crear_usuario(self, db: Session, usuario: UsuarioCreate, usuario_reg: str, ip: str) -> Usuario:
+    def crear_usuario(self, db: Session, usuario: UsuarioCreate, 
+                      usuario_reg: str, ip: str) -> Usuario:
         datos_usuario = {
             "id_empleado": usuario.id_empleado,
             "id_rol": usuario.id_rol,
@@ -67,7 +72,8 @@ class ServicioUsuario(ServicioBase):
             )
         return usuarioFront
 
-    def obtener_informacion_usuario(self, db: Session, usuario:str) -> InformacionUsuario:
+    def obtener_informacion_usuario(self, 
+                                    db: Session, usuario:str) -> InformacionUsuario:
         try:
             resultado = db.execute(
                 text("""SELECT * FROM public.fn_obtener_perfil_usuario(:nombre_usuario)"""),

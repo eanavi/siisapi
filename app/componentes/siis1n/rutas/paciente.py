@@ -2,14 +2,29 @@ from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.orm import Session
 from app.componentes.siis1n.servicios.paciente import ServicioPaciente
 from app.componentes.siis1n.esquemas.paciente import RespuestaPaginada, \
-    PacientePersona, PacienteListado, PacienteB
-from app.nucleo.seguridad import verificar_token
+    PacientePersona, PacienteListado, PacienteB, PacienteListadoEnf, RespuestaPaginadaListado
 from app.nucleo.conexion import obtener_id_centro
 from app.nucleo.baseDatos import leer_bd
 from typing import Optional
+from app.nucleo.seguridad import verificar_token
 serv_paciente = ServicioPaciente()
 
 router = APIRouter(prefix="/pacientes", tags=["Pacientes"])
+
+
+@router.get("/", response_model=RespuestaPaginadaListado, 
+summary=f"Listar todas los pacientes, el criterio es opcional",
+description=f"Lista todos los pacientes registrados en el sistema, el criterio es opcional")
+def listar_pacientes_paginados(
+    pagina: int = Query(1, alias="pagina", ge=1,
+                        description=f"Numero de pagina a mostrar"),
+    tamanio: int = Query(10, alias="tamanio", ge=1, le=50,
+                         description=f"Cantidad de registros a mostrar"),
+    db: Session = Depends(leer_bd),
+    criterio: Optional[str] = None
+):
+    pacientes = serv_paciente.leer_pacientes_paginados(db, pagina, tamanio, criterio=criterio)
+    return pacientes
 
 
 @router.get("/listar/", response_model=list[PacienteB], summary="Listar todas los Pacientes",
@@ -30,7 +45,15 @@ def buscar_pacientes_asignados(
     pacientes = serv_paciente.buscar_pacientes_asignados(db, nombre_usuario, criterio)
     return pacientes
 
+@router.get("/enfermeria/buscar_asig", response_model=list[PacienteListadoEnf])
+def buscar_pacientes_enf_asignados(
+    db: Session = Depends(leer_bd),
+    token: str = Depends(verificar_token),
+    criterio: Optional[str] = None):
 
+    nomre_usuario = token["nombre_usuario"]
+    pacientes = serv_paciente.buscar_pacientes_enf_asignados(db, nomre_usuario, criterio)
+    return pacientes
 
 @router.get("/{id_paciente}", response_model=PacientePersona,
             summary="Obtener Paciente por ID",
@@ -66,10 +89,14 @@ def crear_paciente(
 @router.put("/{id_paciente}", response_model=PacientePersona,
             summary="Actualizar Paciente",
             description="Actualiza un paciente por su ID")
-def actualizar_paciente(id_paciente: int, paciente_persona: PacientePersona,
-                        db: Session = Depends(leer_bd)):
+def actualizar_paciente(
+    id_paciente: int, 
+    paciente_persona: PacientePersona,
+    db: Session = Depends(leer_bd),
+    token: str = Depends(verificar_token),
+    id_centro: int = Depends(obtener_id_centro)):
     paciente = serv_paciente.actualizar_paciente_con_persona(
-        db, id_paciente, paciente_persona)
+        db, id_paciente, id_centro, paciente_persona)
     return paciente
 
 

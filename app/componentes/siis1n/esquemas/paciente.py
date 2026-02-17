@@ -1,5 +1,5 @@
 from pydantic import BaseModel, UUID4, Field, ConfigDict
-from app.componentes.siis1n.esquemas.persona import PersonaBase, Direccion, DireccionTipo
+from app.componentes.siis1n.esquemas.persona import PersonaBase, Direccion, DireccionTipo, PersonaResponse
 from typing import Optional, List, Dict
 from datetime import date, time
 
@@ -56,13 +56,13 @@ class PacienteBase(BaseModel):
         json_schema_extra={"example": "Gestion comunitaria"})
 
 
-class PacientePersona(PersonaBase):
+class PacientePersona(PersonaResponse):
     model_config = ConfigDict(from_attributes=True)
 
-#    id_centro: int = Field(
-#        ..., title="Id Centro",
-#        description="Identificador unico del centro",
-#        json_schema_extra={"example": 1})
+    id_centro: int = Field(
+        ..., title="Id Centro",
+        description="Identificador unico del centro",
+        json_schema_extra={"example": 1})
     estado_civil: str = Field(
         ..., title="Estado Civil",
         description="Estado civil del paciente",
@@ -143,6 +143,55 @@ class PacienteListado(BaseModel):
         description="Hora de reserva del paciente",
         json_schema_extra={"example": "08:00:00"})
 
+class PacienteListadoPag(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id_paciente: int = Field(
+        ..., title="Id Paciente",
+        description="Identificador unico del paciente",
+        json_schema_extra={"example": 1})
+    ci: str = Field(
+        ..., title="CI",
+        description="Cedula de identidad del paciente",
+        json_schema_extra={"example": "12345678"})
+    paterno: str = Field(
+        ..., title="Apellido Paterno",
+        description="Apellido paterno del paciente",
+        json_schema_extra={"example": "Perez"})
+    materno: str = Field(
+        ..., title="Apellido Materno",
+        description="Apellido materno del paciente",
+        json_schema_extra={"example": "Lopez"})
+    nombres: str = Field(
+        ..., title="Nombres",
+        description="Nombres del paciente",
+        json_schema_extra={"example": "Juan Carlos"})
+    fecha_nacimiento: date = Field(
+        ..., title="Fecha de Nacimiento",
+        description="Fecha de nacimiento del paciente",
+        json_schema_extra={"example": "1990-01-01"})
+    edad: str = Field(
+        ..., title="Edad",
+        description="Edad del paciente en años",
+        json_schema_extra={"example": 30})
+    sexo: str = Field(
+        ..., title="Sexo",
+        description="Sexo del paciente",
+        json_schema_extra={"example": "M"}
+    )
+    total_count: int = Field(
+        ..., title="Total Count",
+        description="Total de pacientes que coinciden con el criterio de busqueda",
+        json_schema_extra={"example": 100}
+    )
+
+class PacienteListadoEnf(PacienteListado):
+    prestacion: str = Field(
+        ..., title="Prestacion",
+        description="Prestacion del paciente",
+        json_schema_extra={"example": "Medicina General"})
+
+
 class PacienteB(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id_persona: UUID4 = Field(
@@ -208,3 +257,11 @@ class RespuestaPaginada(BaseModel):
     pagina: int
     tamanio: int
     items: List[PacienteResponse]
+
+class RespuestaPaginadaListado(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    total: int
+    pagina: int
+    tamanio: int
+    items: List[PacienteListadoPag]

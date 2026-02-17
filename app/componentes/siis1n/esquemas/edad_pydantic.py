@@ -1,6 +1,6 @@
 from pydantic import BaseModel, model_validator
 from app.componentes.siis1n.modelos.edad import Edad
-from app.utiles.validar_edad import validar_fecha_de_edad
+from app.utiles.varios import validar_fecha_de_edad
 
 
 class EdadPydantic(BaseModel):

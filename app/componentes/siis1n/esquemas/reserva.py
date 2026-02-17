@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
+from datetime import date, time
+
 
 
 class ReservaBase(BaseModel):
@@ -13,11 +15,11 @@ class ReservaBase(BaseModel):
         ..., title="Id Paciente",
         description="Identificador unico del paciente",
         json_schema_extra={"example": 1})
-    fecha_reserva: str = Field(
+    fecha_reserva: Optional[date] = Field(
         ..., title="Fecha Reserva",
         description="Fecha de reserva del turno",
         json_schema_extra={"example": "2023-01-01"})
-    hora_reserva: str = Field(
+    hora_reserva: Optional[time] = Field(
         ..., title="Hora Reserva",
         description="Hora de reserva del turno",
         json_schema_extra={"example": "08:00:00"})

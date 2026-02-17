@@ -1,7 +1,7 @@
 
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
-from app.utiles.validar_edad import validar_fecha_de_edad
+from app.utiles.varios import validar_fecha_de_edad
 
 
 class Edad:

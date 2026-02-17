@@ -37,7 +37,7 @@ class Consulta(ModeloBase):
     curaciones: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     otras_enf: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     motivo: Mapped[Optional[str]] = mapped_column(TEXT, nullable=True)
-    ex_fisio: Mapped[Optional[str]] = mapped_column(TEXT, nullable=True)
+    ex_fisico: Mapped[Optional[str]] = mapped_column(TEXT, nullable=True)
     diagnostico: Mapped[Optional[str]] = mapped_column(TEXT, nullable=True)
     tratamiento: Mapped[Optional[str]] = mapped_column(TEXT, nullable=True)
     dx_cie10: Mapped[list[Optional[str]]] = mapped_column(

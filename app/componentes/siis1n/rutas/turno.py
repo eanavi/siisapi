@@ -1,9 +1,12 @@
 from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.orm import Session
 from app.componentes.siis1n.servicios.turno import ServicioTurno
-from app.componentes.siis1n.esquemas.turno import TurnoResponse, RespuestaPaginada, TurnoCreate
+from app.componentes.siis1n.esquemas.turno import TurnoResponse, \
+RespuestaPaginada, TurnoCreate, TurnoFecha
 from app.nucleo.seguridad import verificar_token
 from app.nucleo.baseDatos import leer_bd
+from datetime import date
+from typing import List
 
 serv_turno = ServicioTurno()
 
@@ -93,7 +96,7 @@ def eliminar_turno(
     return resultado
 
 
-@router.get("/medico/{id_medico}",
+@router.get("/medicoSimple/{id_medico}",
             response_model=RespuestaPaginada,
             summary=f"Listar todos los turnos de un medico",
             description=f"Lista todos los turnos registrados en el sistema")
@@ -123,3 +126,14 @@ def listar_turnos_prestacion(
     turnos = serv_turno.leer_turno_prestacion(
         db, id_prestacion, pagina, tamanio)
     return turnos
+
+@router.get("/fecha/{fecha}", response_model=List[TurnoFecha],
+            summary="Obtener Los turnos de un médico de hoy u otra fecha",
+            description="Obtiene un turno de un medico de hoy u otra fecha")
+def obtener_turno_medico_fecha(
+    fecha: str,
+    db: Session = Depends(leer_bd),
+    token: str = Depends(verificar_token)):
+    nombre_usuario = token["nombre_usuario"]
+    turno =  serv_turno.leer_turno_medico_fecha(db, nombre_usuario, fecha)
+    return turno
