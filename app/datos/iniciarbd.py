@@ -54,7 +54,7 @@ def preparar_bd():
 
     CREATE EXTENSION IF NOT EXISTS unaccent;
 
-    CREATE TYPE public.edad AS (
+    CREATE TYPE IF NOT EXISTS public.edad AS (
 	anio int4,
 	mes int4,
 	dia int4);
