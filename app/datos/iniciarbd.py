@@ -56,14 +56,14 @@ def preparar_bd():
     do $$
     begin 
         if not exists (select 1 from pg_type where typname = 'dia_semana_enum') then 
-            create type public.dia_semana_enum as enum('L','M','I','J','V','S','D');
+            create type dia_semana_enum as enum('L','M','I','J','V','S','D');
         end if;
     end $$;
 
     do $$
     begin
         if not exists (select 1 from pg_type where typname = 'edad') then
-            create type public.edad as (anio int4, mes int4, dia int4);
+            create type edad as (anio int4, mes int4, dia int4);
         end if;
     end $$;
 
@@ -515,7 +515,7 @@ def inicia_tablas():
 
     cons_inserta_roles = r"""
 
-    insert into  public.rol (id_rol, nombre_rol, descripcion, estado_reg, usuario_reg, ip_reg,fecha_reg) values 
+    insert into  public.rol (nombre_rol, descripcion, estado_reg, usuario_reg, ip_reg, fecha_reg) values 
         ('Administrador','Rol de administrador del sistema', 'V', 'eanavi', '127.0.0.1', '2025-05-27 02:35:54.886'),
         ('Enfermera', 'Rol con acceso a atenciones de enfermería y consultas', 'V', 'eanavi', '127.0.0.1', '2025-04-29 00:00:00'),
         ('Odontologo', 'Rol con acceso a atenciones odontológicas y consultas', 'V', 'eanavi', '127.0.0.1', '2025-04-29 00:00:00'),
