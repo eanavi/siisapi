@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import sys
+import os
+
+# Agregamos el directorio raíz del proyecto al sys.path para que se pueda encontrar el módulo 'app'
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 from app.componentes.siis1n.modelos.lista import Lista
 from app.componentes.siis1n.modelos.grupo import Grupo
 from app.componentes.siis1n.modelos.rol import Rol
@@ -17,32 +23,11 @@ from app.componentes.siis1n.modelos.base import ModeloBase, ParametroBase
 from app.nucleo.configuracion import config
 from app.nucleo.seguridad import generar_clave_encriptata
 from app.nucleo.baseDatos import leer_bd
-from ..componentes.siis1n.modelos.lista import Lista
-from ..componentes.siis1n.modelos.grupo import Grupo
-from ..componentes.siis1n.modelos.rol import Rol
-from ..componentes.siis1n.modelos.empleado import Empleado
-from ..componentes.siis1n.modelos.centro import Centro
-from ..componentes.siis1n.modelos.usuario import Usuario
-from ..componentes.siis1n.modelos.persona import Persona
-from ..componentes.siis1n.modelos.prestacion import Prestacion
-from ..componentes.siis1n.modelos.paciente import Paciente
-from ..componentes.siis1n.modelos.turno import Turno
-from ..componentes.siis1n.modelos.reserva import Reserva
-from ..componentes.siis1n.modelos.consulta import Consulta
-from ..componentes.siis1n.modelos.variables import Variables
-from ..componentes.siis1n.modelos.base import ModeloBase, ParametroBase
-from ..nucleo.configuracion import config
-from ..nucleo.seguridad import generar_clave_encriptata
-from ..nucleo.baseDatos import leer_bd
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, configure_mappers
 from sqlalchemy.sql import text
 from datetime import date, datetime
 import uuid
-import sys
-import os
-import logging
-
 
 logging.basicConfig()
 logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
@@ -63,7 +48,8 @@ engine = create_engine(
 
 def preparar_bd():
     db = next(leer_bd())
-    consulta = f"""
+    consulta = r"""
+
 
 
     CREATE EXTENSION unaccent
@@ -534,7 +520,8 @@ def preparar_bd():
 
 def inicia_tablas():
     db = next(leer_bd())
-    consulta = f""" 
+    consulta = r""" 
+
     INSERT INTO public.prestacion (id_centro,nombre_prestacion,sigla,edad_maxima,edad_minima,genero,tipo_prestador,tiempo_maximo,estado_reg,usuario_reg,ip_reg,fecha_reg) VALUES
         (1,'Consulta Externa','CE','(120,0,0)','(5,0,0)','A','M',15,'V','eanavi','127.0.0.1','2025-04-29 00:00:00'),
         (1,'Atención al Niño Sano','NS','(5,12,31)','(0,0,0)','A','M',15,'V','eanavi','127.0.0.1','2025-04-29 00:00:00'),
@@ -548,9 +535,8 @@ def inicia_tablas():
     db.execute(text(consulta))
     db.commit()
 
-    cons_inserta_roles = f"""
-    INSERT INTO public.rol (nombre_rol, descripcion, estado_reg, usuario_reg, ip_reg, fecha_reg) VALUES
-        ('Medico', 'Rol con acceso a consultas y atenciones medicas', 'V', 'eanavi', '127.0.0.1', '2025-04-29 00:00:00'),
+    cons_inserta_roles = r"""
+
         ('Enfermera', 'Rol con acceso a atenciones de enfermería y consultas', 'V', 'eanavi', '127.0.0.1', '2025-04-29 00:00:00'),
         ('Odontologo', 'Rol con acceso a atenciones odontológicas y consultas', 'V', 'eanavi', '127.0.0.1', '2025-04-29 00:00:00'),
         ('Operador', 'Rol con acceso a la operacion del sistema', 'V', 'eanavi', '127.0.0.1', '2025-04-29 00:00:00');
@@ -600,7 +586,8 @@ def inicia_tablas():
     db.commit()
 
 
-    consulta2 = f"""
+    consulta2 = r"""
+
     insert into public.grupo (id_grupo, nombre_grupo, tipo, area, estado_reg) values
         (1,'cf_ingresofam','N','M','V'),
         (2,'hv_estadocivil','N','M','V'),
@@ -685,7 +672,8 @@ def inicia_tablas():
     db.execute(text(consulta2))
     db.commit()
 
-    consulta3 = f"""
+    consulta3 = r"""
+
     INSERT INTO public.lista (id_grupo, cod_texto, cod_numero, descripcion, orden, estado_reg) VALUES
         (1,'',1,'Le Permite Ahorrar ', 1,'V'),
         (1,'',2,'Satisface Necesidades Basicas Y Otras ', 2,'V'),
