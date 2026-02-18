@@ -1,3 +1,9 @@
+import sys
+import os
+
+# Agregamos el directorio raíz del proyecto al sys.path para que se pueda encontrar el módulo 'app'
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app.nucleo.baseDatos import leer_bd, init_bd
