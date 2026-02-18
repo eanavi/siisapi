@@ -1044,39 +1044,6 @@ def preparar_bd():
     $function$
     ;
 
-    CREATE OR REPLACE FUNCTION public.unaccent(text)
-    RETURNS text
-    LANGUAGE c
-    STABLE PARALLEL SAFE STRICT
-    AS '$libdir/unaccent', $function$unaccent_dict$function$
-    ;
-
-
-    CREATE OR REPLACE FUNCTION public.unaccent(regdictionary, text)
-    RETURNS text
-    LANGUAGE c
-    STABLE PARALLEL SAFE STRICT
-    AS '$libdir/unaccent', $function$unaccent_dict$function$
-    ;
-
-
-    CREATE OR REPLACE FUNCTION public.unaccent_init(internal)
-    RETURNS internal
-    LANGUAGE c
-    PARALLEL SAFE
-    AS '$libdir/unaccent', $function$unaccent_init$function$
-    ;
-
-
-
-    CREATE OR REPLACE FUNCTION public.unaccent_lexize(internal, internal, internal, internal)
-    RETURNS internal
-    LANGUAGE c
-    PARALLEL SAFE
-    AS '$libdir/unaccent', $function$unaccent_lexize$function$
-    ;
-
-    -- DROP FUNCTION public.validate_reserva();
 
     CREATE OR REPLACE FUNCTION public.validate_reserva()
     RETURNS trigger
@@ -1107,7 +1074,7 @@ def preparar_bd():
     ;
     
 
-    
+
 
 
 
