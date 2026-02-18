@@ -52,15 +52,14 @@ def preparar_bd():
     consulta = r"""
 
 
-
-    CREATE EXTENSION unaccent
+    CREATE EXTENSION IF NOT EXISTS unaccent;
 
     CREATE TYPE public.edad AS (
 	anio int4,
 	mes int4,
 	dia int4);
 
-    CREATE OR REPLACE FUNCTION public.calcular_edad(fecha_nacimiento date)
+    CREATE OR REPLACE FUNCTION public.calcular_edad_pg(fecha_nacimiento date)
     RETURNS edad
     LANGUAGE plpgsql
     AS $function$
@@ -302,36 +301,6 @@ def preparar_bd():
         RETURN edad.anio || ' años, ' || edad.mes || ' meses, ' || edad.dia || ' días';
     END;
     $function$
-    ;
-
-    CREATE OR REPLACE FUNCTION public.es_dia_valido(anio integer, mes integer, dia integer)
-    RETURNS boolean
-    LANGUAGE plpgsql
-    IMMUTABLE
-    AS $function$
-        DECLARE
-            max_dias INTEGER;
-        BEGIN
-            IF mes < 1 OR mes > 12 OR dia < 1 THEN
-                RETURN FALSE;
-            END IF;
-
-            CASE mes
-                WHEN 2 THEN
-                    IF (anio % 4 = 0 AND anio % 100 <> 0) OR anio % 400 = 0 THEN
-                        max_dias := 29;
-                    ELSE
-                        max_dias := 28;
-                    END IF;
-                WHEN 4, 6, 9, 11 THEN
-                    max_dias := 30;
-                ELSE
-                    max_dias := 31;
-            END CASE;
-
-            RETURN dia <= max_dias;
-        END;
-        $function$
     ;
 
     CREATE OR REPLACE FUNCTION public.fn_nombre_usuario(p_nombre_usuario character varying)
