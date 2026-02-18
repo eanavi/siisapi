@@ -507,9 +507,13 @@ def inicia_tablas():
 
     cons_inserta_roles = r"""
 
+    insert into  public.rol (id_rol, nombre_rol, descripcion, estado_reg, usuario_reg, ip_reg,fecha_reg) values 
+        ('Administrador','Rol de administrador del sistema', 'V', 'eanavi', '127.0.0.1', '2025-05-27 02:35:54.886'),
         ('Enfermera', 'Rol con acceso a atenciones de enfermería y consultas', 'V', 'eanavi', '127.0.0.1', '2025-04-29 00:00:00'),
         ('Odontologo', 'Rol con acceso a atenciones odontológicas y consultas', 'V', 'eanavi', '127.0.0.1', '2025-04-29 00:00:00'),
+        ('Medico','Rol con acceso a consultas y atenciones medicas', 'V', 'eanavi', '127.0.0.1', '2025-05-27 02:35:54.886'),
         ('Operador', 'Rol con acceso a la operacion del sistema', 'V', 'eanavi', '127.0.0.1', '2025-04-29 00:00:00');
+
 
     insert into public.menu(id_menu_padre, nombre_menu, ruta, icono, orden, categoria, estado_reg, usuario_reg, ip_reg, fecha_reg) values
         (null, 'Inicio', '/inicio', 'fa fa-home', 1, 'M', 'V', 'eanavi', '127.0.0.1', '2025-04-29 00:00:00'),
