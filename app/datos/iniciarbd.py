@@ -1532,8 +1532,6 @@ def continua_bd():
             estado_civil = 1,
             ocupacion = 32,
             nivel_estudios = 2,
-            mun_nacimiento = 3,
-            mun_residencia = 3,
             idioma_hablado = 1,
             idioma_materno = 1,
             autopertenencia = 1,
