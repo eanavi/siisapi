@@ -55,19 +55,17 @@ def preparar_bd():
 
     do $$
     begin 
-        if not exists (select 1 from pg_type where typname = "dia_semana_enum") then 
+        if not exists (select 1 from pg_type where typname = 'dia_semana_enum') then 
             create type public.dia_semana_enum as enum('L','M','I','J','V','S','D');
         end if;
-    end
-    $$
+    end $$;
 
     do $$
     begin
-        if not exists (select 1 from pg_type where typname = "edad") then
+        if not exists (select 1 from pg_type where typname = 'edad') then
             create type public.edad as (anio int4, mes int4, dia int4);
         end if;
-    end
-    $$
+    end $$;
 
     CREATE OR REPLACE FUNCTION public.calcular_edad_pg(fecha_nacimiento date)
     RETURNS edad
@@ -80,9 +78,9 @@ def preparar_bd():
         dias INTEGER;
     BEGIN
         -- Calcular la diferencia en años, meses y días
-        anios := DATE_PART('year', AGE(CURRENT_DATE, fecha_nacimiento));
-        meses := DATE_PART('month', AGE(CURRENT_DATE, fecha_nacimiento));
-        dias := DATE_PART('day', AGE(CURRENT_DATE, fecha_nacimiento));
+        anios := DATE_PART('year', AGE(CURRENT_DATE, fecha_nacimiento))::int4;
+        meses := DATE_PART('month', AGE(CURRENT_DATE, fecha_nacimiento))::int4;
+        dias := DATE_PART('day', AGE(CURRENT_DATE, fecha_nacimiento))::int4;
 
         -- Asignar los valores al tipo compuesto edad
         edad_resultado.anio := anios;
