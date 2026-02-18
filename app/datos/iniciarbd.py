@@ -51,13 +51,23 @@ def preparar_bd():
     db = next(leer_bd())
     consulta = r"""
 
-
     CREATE EXTENSION IF NOT EXISTS unaccent;
 
-    CREATE TYPE IF NOT EXISTS public.edad AS (
-	anio int4,
-	mes int4,
-	dia int4);
+    do $$
+    begin 
+        if not exist (select 1 from pg_type where typname = "dia_semana_enum") then 
+            create type public.dia_semana_enum as enum('L','M','I','J','V','S','D');
+        end if;
+    end
+    $$
+
+    do $$
+    begin
+        if not exist (select 1 from pg_type where typname = "edad") then
+            create type public.edad as (anio int4, mes int4, dia int4);
+        end if;
+    end
+    $$
 
     CREATE OR REPLACE FUNCTION public.calcular_edad_pg(fecha_nacimiento date)
     RETURNS edad
