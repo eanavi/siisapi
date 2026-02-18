@@ -28,6 +28,7 @@ from sqlalchemy.orm import Session, configure_mappers
 from sqlalchemy.sql import text
 from datetime import date, datetime
 import uuid
+import logging
 
 logging.basicConfig()
 logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
