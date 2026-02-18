@@ -67,62 +67,586 @@ def preparar_bd():
         end if;
     end $$;
 
-    CREATE OR REPLACE FUNCTION public.calcular_edad_pg(fecha_nacimiento date)
-    RETURNS edad
+
+    -- DROP FUNCTION public.buscar_empleado(text, int4, int4);
+
+    CREATE OR REPLACE FUNCTION public.buscar_empleado(criterio text DEFAULT NULL::text, p_limit integer DEFAULT 20, p_offset integer DEFAULT 0)
+    RETURNS TABLE(id_empleado integer, ci character varying, paterno character varying, materno character varying, nombres character varying, fecha_nacimiento date, cargo character varying, profesion character varying, total_count bigint)
     LANGUAGE plpgsql
     AS $function$
     DECLARE
-        edad_resultado public.edad;
-        anios INTEGER;
-        meses INTEGER;
-        dias INTEGER;
+        aux TEXT[];
+        base_query TEXT;
     BEGIN
-        -- Calcular la diferencia en años, meses y días
-        anios := DATE_PART('year', AGE(CURRENT_DATE, fecha_nacimiento))::int4;
-        meses := DATE_PART('month', AGE(CURRENT_DATE, fecha_nacimiento))::int4;
-        dias := DATE_PART('day', AGE(CURRENT_DATE, fecha_nacimiento))::int4;
+        /* =========================
+        Construcción de filtro base
+        ========================= */
+        IF criterio IS NULL THEN
+            base_query := $$
+                FROM public.persona p
+                INNER JOIN public.empleado e ON p.id_persona = e.id_persona
+                INNER JOIN public.lista l 
+                    ON l.cod_numero = e.profesion 
+                AND l.id_grupo = 67
+                AND l.estado_reg = 'V'
+                WHERE p.estado_reg = 'V'
+                AND e.estado_reg = 'V'
+                AND p.tipo = 'E'
+                AND e.tipo_empleado = 'M'
+            $$;
 
-        -- Asignar los valores al tipo compuesto edad
-        edad_resultado.anio := anios;
-        edad_resultado.mes := meses;
-        edad_resultado.dia := dias;
+        ELSIF criterio ~ '^\d+$' THEN
+            base_query := format($$
+                FROM public.persona p
+                INNER JOIN public.empleado e ON p.id_persona = e.id_persona
+                INNER JOIN public.lista l 
+                    ON l.cod_numero = e.profesion 
+                AND l.id_grupo = 67
+                AND l.estado_reg = 'V'
+                WHERE p.estado_reg = 'V'
+                AND e.estado_reg = 'V'
+                AND p.tipo = 'E'
+                AND e.tipo_empleado = 'M'
+                AND p.ci LIKE '%%%s%%'
+            $$, criterio);
 
-        RETURN edad_resultado;
-    END;
-    $function$
-    ;
+        ELSIF criterio ~ '^(0[1-9]|[12][0-9]|3[01])[-\/](0[1-9]|1[0-2])[-\/](\d{4})$' THEN
+            base_query := format($$
+                FROM public.persona p
+                INNER JOIN public.empleado e ON p.id_persona = e.id_persona
+                INNER JOIN public.lista l 
+                    ON l.cod_numero = e.profesion 
+                AND l.id_grupo = 67
+                AND l.estado_reg = 'V'
+                WHERE p.estado_reg = 'V'
+                AND e.estado_reg = 'V'
+                AND p.tipo = 'E'
+                AND e.tipo_empleado = 'M'
+                AND p.fecha_nacimiento = CAST('%s' AS DATE)
+            $$, criterio);
 
+        ELSE
+            aux := string_to_array(criterio, ' ');
 
-
-    CREATE OR REPLACE FUNCTION public.es_dia_valido(anio integer, mes integer, dia integer)
-    RETURNS boolean
-    LANGUAGE plpgsql
-    IMMUTABLE
-    AS $function$
-    DECLARE
-        max_dias INTEGER;
-    BEGIN
-        IF mes < 1 OR mes > 12 OR dia < 1 THEN
-            RETURN FALSE;
+            base_query := $$
+                FROM public.persona p
+                INNER JOIN public.empleado e ON p.id_persona = e.id_persona
+                INNER JOIN public.lista l 
+                    ON l.cod_numero = e.profesion 
+                AND l.id_grupo = 67
+                AND l.estado_reg = 'V'
+                WHERE p.estado_reg = 'V'
+                AND e.estado_reg = 'V'
+                AND p.tipo = 'E'
+                AND e.tipo_empleado = 'M'
+                AND (
+            $$ || CASE array_length(aux, 1)
+                    WHEN 1 THEN
+                        format(
+                            'normalizar_cadena(p.paterno) LIKE ''%%%s%%''
+                            OR normalizar_cadena(p.nombres) LIKE ''%%%s%%''',
+                            normalizar_cadena(aux[1]),
+                            normalizar_cadena(aux[1])
+                        )
+                    WHEN 2 THEN
+                        format(
+                            'normalizar_cadena(p.nombres) LIKE ''%%%s%%''
+                            AND normalizar_cadena(p.paterno) LIKE ''%%%s%%''',
+                            normalizar_cadena(aux[1]),
+                            normalizar_cadena(aux[2])
+                        )
+                    WHEN 3 THEN
+                        format(
+                            'normalizar_cadena(p.nombres) LIKE ''%%%s%%''
+                            AND normalizar_cadena(p.paterno) LIKE ''%%%s%%''
+                            AND normalizar_cadena(p.materno) LIKE ''%%%s%%''',
+                            normalizar_cadena(aux[1]),
+                            normalizar_cadena(aux[2]),
+                            normalizar_cadena(aux[3])
+                        )
+                    ELSE
+                        format(
+                            'normalizar_cadena(p.paterno) LIKE ''%%%s%%''',
+                            normalizar_cadena(criterio)
+                        )
+                END || ')';
         END IF;
 
-        CASE mes
-            WHEN 2 THEN
-                IF (anio % 4 = 0 AND anio % 100 <> 0) OR anio % 400 = 0 THEN
-                    max_dias := 29;
-                ELSE
-                    max_dias := 28;
-                END IF;
-            WHEN 4, 6, 9, 11 THEN
-                max_dias := 30;
-            ELSE
-                max_dias := 31;
-        END CASE;
+        /* =========================
+        Query final con paginación
+        ========================= */
+        RETURN QUERY EXECUTE format($q$
+            WITH total AS (
+                SELECT COUNT(*) AS total_count
+                %s
+            )
+            SELECT
+                e.id_empleado,
+                p.ci,
+                p.paterno,
+                p.materno,
+                p.nombres,
+                p.fecha_nacimiento,
+                e.cargo,
+                l.descripcion AS profesion,
+                (SELECT total_count FROM total)
+            %s
+            ORDER BY p.paterno, p.materno, p.nombres
+            LIMIT %s OFFSET %s
+        $q$, base_query, base_query, p_limit, p_offset);
 
-        RETURN dia <= max_dias;
     END;
     $function$
     ;
+
+    CREATE OR REPLACE FUNCTION public.buscar_empleados(criterio text DEFAULT NULL::text)
+    RETURNS TABLE(id_persona text, id_empleado integer, tipo character, ci character varying, paterno character varying, materno character varying, nombres character varying, fecha_nacimiento date, sexo character, direccion jsonb, telefono jsonb, correo jsonb, estado_reg character, usuario_reg character varying, ip_reg character varying)
+    LANGUAGE plpgsql
+    AS $function$
+    DECLARE
+        aux TEXT[];
+    BEGIN
+        -- Si criterio es NULL, retornar todos los registros activos
+        IF criterio IS NULL THEN
+            RETURN QUERY
+            SELECT p.id_persona::text, e.id_empleado, p.tipo, p.ci, p.paterno, p.materno, p.nombres, p.fecha_nacimiento, p.sexo,
+                p.direccion, p.telefono, p.correo, p.estado_reg, p.usuario_reg, p.ip_reg
+            FROM public.persona p
+            INNER JOIN public.empleado e ON p.id_persona = e.id_persona
+            WHERE e.estado_reg = 'V';
+        -- Búsqueda por cédula de identidad
+        ELSIF criterio ~ '^\d+$' THEN
+            RETURN QUERY
+            SELECT p.id_persona::text, e.id_empleado, p.tipo, p.ci, p.paterno, p.materno, p.nombres, p.fecha_nacimiento, p.sexo,
+                p.direccion, p.telefono, p.correo, p.estado_reg, p.usuario_reg, p.ip_reg
+            FROM public.persona p
+            INNER JOIN public.empleado e ON p.id_persona = e.id_persona
+            WHERE e.estado_reg = 'V' AND p.ci LIKE '%' || criterio || '%';
+        -- Búsqueda por fecha de nacimiento
+        ELSIF criterio ~ '^(0[1-9]|[12][0-9]|3[01])[-\/](0[1-9]|1[0-2])[-\/](\d{4})$' THEN
+            RETURN QUERY
+            SELECT p.id_persona::text, e.id_empleado, p.tipo, p.ci, p.paterno, p.materno, p.nombres, p.fecha_nacimiento, p.sexo,
+                p.direccion, p.telefono, p.correo, p.estado_reg, p.usuario_reg, p.ip_reg
+            FROM public.persona p
+            INNER JOIN public.empleado e ON p.id_persona = e.id_persona
+            WHERE e.estado_reg = 'V' AND p.fecha_nacimiento = CAST(criterio AS DATE);
+        -- Búsqueda por nombres y apellidos
+        ELSE
+            aux := string_to_array(criterio, ' ');
+
+            RETURN QUERY
+            SELECT p.id_persona::text, e.id_empleado, p.tipo, p.ci, p.paterno, p.materno, p.nombres, p.fecha_nacimiento, p.sexo,
+                p.direccion, p.telefono, p.correo, p.estado_reg, p.usuario_reg, p.ip_reg
+            FROM public.persona p
+            INNER JOIN public.empleado e ON p.id_persona = e.id_persona
+            WHERE (
+                CASE array_length(aux, 1)
+                    WHEN 1 THEN normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(aux[1]) || '%'
+                    WHEN 2 THEN normalizar_cadena(p.nombres) LIKE '%' || normalizar_cadena(aux[1]) || '%' 
+                                AND normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(aux[2]) || '%'
+                    WHEN 3 THEN normalizar_cadena(p.nombres) LIKE '%' || normalizar_cadena(aux[1]) || '%' 
+                                AND normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(aux[2]) || '%' 
+                                AND normalizar_cadena(p.materno) LIKE '%' || normalizar_cadena(aux[3]) || '%'
+                    WHEN 4 THEN ((normalizar_cadena(p.nombres) LIKE '%' || normalizar_cadena(aux[1]) || '%' 
+                                OR normalizar_cadena(p.nombres) LIKE '%' || normalizar_cadena(aux[2]) || '%') 
+                                AND normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(aux[3]) || '%' 
+                                AND normalizar_cadena(p.materno) LIKE '%' || normalizar_cadena(aux[4]) || '%')
+                    ELSE normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(criterio) || '%'
+                END
+            ) AND e.estado_reg = 'V';
+        END IF;
+    END;
+    $function$
+    ;
+
+
+
+    CREATE OR REPLACE FUNCTION public.buscar_pacientes(criterio text DEFAULT NULL::text, p_limit integer DEFAULT 20, p_offset integer DEFAULT 0)
+    RETURNS TABLE(id_paciente integer, ci character varying, paterno character varying, materno character varying, nombres character varying, fecha_nacimiento date, edad text, sexo character, total_count bigint)
+    LANGUAGE plpgsql
+    AS $function$
+    DECLARE
+        aux TEXT[];
+        base_query TEXT;
+    BEGIN
+        -- Construir consulta base según criterio
+        IF criterio IS NULL THEN
+            base_query := $$
+                FROM public.persona p
+                INNER JOIN public.paciente c ON p.id_persona = c.id_persona
+                WHERE c.estado_reg = 'V'
+            $$;
+        ELSIF criterio ~ '^\d+$' THEN
+            base_query := format($$
+                FROM public.persona p
+                INNER JOIN public.paciente c ON p.id_persona = c.id_persona
+                WHERE c.estado_reg = 'V' AND p.ci LIKE '%%%s%%'
+            $$, criterio);
+        ELSIF criterio ~ '^(0[1-9]|[12][0-9]|3[01])[-\/](0[1-9]|1[0-2])[-\/](\d{4})$' THEN
+            base_query := format($$
+                FROM public.persona p
+                INNER JOIN public.paciente c ON p.id_persona = c.id_persona
+                WHERE c.estado_reg = 'V' AND p.fecha_nacimiento = CAST('%s' AS DATE)
+            $$, criterio);
+        ELSE
+            aux := string_to_array(criterio, ' ');
+            base_query := $$
+                FROM public.persona p
+                INNER JOIN public.paciente c ON p.id_persona = c.id_persona
+                WHERE c.estado_reg = 'V' AND (
+            $$ || CASE array_length(aux, 1)
+                    WHEN 1 THEN format('normalizar_cadena(p.paterno) LIKE ''%%%s%%''', normalizar_cadena(aux[1]))
+                    WHEN 2 THEN format('normalizar_cadena(p.nombres) LIKE ''%%%s%%'' AND normalizar_cadena(p.paterno) LIKE ''%%%s%%''', normalizar_cadena(aux[1]), normalizar_cadena(aux[2]))
+                    WHEN 3 THEN format('normalizar_cadena(p.nombres) LIKE ''%%%s%%'' AND normalizar_cadena(p.paterno) LIKE ''%%%s%%'' AND normalizar_cadena(p.materno) LIKE ''%%%s%%''', normalizar_cadena(aux[1]), normalizar_cadena(aux[2]), normalizar_cadena(aux[3]))
+                    WHEN 4 THEN format('((normalizar_cadena(p.nombres) LIKE ''%%%s%%'' OR normalizar_cadena(p.nombres) LIKE ''%%%s%%'') AND normalizar_cadena(p.paterno) LIKE ''%%%s%%'' AND normalizar_cadena(p.materno) LIKE ''%%%s%%'')',
+                                        normalizar_cadena(aux[1]), normalizar_cadena(aux[2]), normalizar_cadena(aux[3]), normalizar_cadena(aux[4]))
+                    ELSE format('normalizar_cadena(p.paterno) LIKE ''%%%s%%''', normalizar_cadena(criterio))
+                END || ')';
+        END IF;
+
+        -- Retornar consulta con paginación y conteo total
+        RETURN QUERY EXECUTE format($q$
+            WITH total AS (
+                SELECT COUNT(*) AS total_count %s
+            )
+            SELECT 
+                c.id_paciente, p.ci, p.paterno, p.materno, 
+                p.nombres, p.fecha_nacimiento, edad_a_texto(calcular_edad(p.fecha_nacimiento)) as edad, p.sexo,
+                (SELECT total_count FROM total)
+            %s
+            ORDER BY p.paterno, p.materno, p.nombres
+            LIMIT %s OFFSET %s
+        $q$, base_query, base_query, p_limit, p_offset);
+    END;
+    $function$
+    ;
+
+
+
+    CREATE OR REPLACE FUNCTION public.buscar_pacientes(criterio text DEFAULT NULL::text)
+    RETURNS TABLE(id_persona text, id_paciente integer, tipo character, ci character varying, paterno character varying, materno character varying, nombres character varying, fecha_nacimiento date, sexo character, direccion jsonb, telefono jsonb, correo jsonb, estado_reg character, usuario_reg character varying, ip_reg character varying)
+    LANGUAGE plpgsql
+    AS $function$
+    DECLARE
+        aux TEXT[];
+    BEGIN
+        -- Si criterio es NULL, retornar todos los registros activos
+        IF criterio IS NULL THEN
+            RETURN QUERY
+            SELECT p.id_persona::text, c.id_paciente, p.tipo, p.ci, p.paterno, p.materno, p.nombres, p.fecha_nacimiento, p.sexo,
+                p.direccion, p.telefono, p.correo, 
+                p.estado_reg, p.usuario_reg, p.ip_reg
+            FROM public.persona p
+            INNER JOIN public.paciente c ON p.id_persona = c.id_persona
+            WHERE c.estado_reg = 'V';
+        -- Búsqueda por cédula de identidad
+        ELSIF criterio ~ '^\d+$' THEN
+            RETURN QUERY
+            SELECT p.id_persona::text, c.id_paciente, p.tipo, p.ci, p.paterno, p.materno, p.nombres, p.fecha_nacimiento, p.sexo,
+                p.direccion, p.telefono, p.correo, p.estado_reg, p.usuario_reg, p.ip_reg
+            FROM public.persona p
+            INNER JOIN public.paciente c ON p.id_persona = c.id_persona
+            WHERE c.estado_reg = 'V' AND p.ci LIKE '%' || criterio || '%';
+        -- Búsqueda por fecha de nacimiento
+        ELSIF criterio ~ '^(0[1-9]|[12][0-9]|3[01])[-\/](0[1-9]|1[0-2])[-\/](\d{4})$' THEN
+            RETURN QUERY
+            SELECT p.id_persona::text, c.id_paciente, p.tipo, p.ci, p.paterno, p.materno, p.nombres, p.fecha_nacimiento, p.sexo,
+                p.direccion, p.telefono, p.correo, p.estado_reg, p.usuario_reg, p.ip_reg
+            FROM public.persona p
+            INNER JOIN public.paciente as c ON p.id_persona = c.id_persona
+            WHERE c.estado_reg = 'V' AND p.fecha_nacimiento = CAST(criterio AS DATE);
+        -- Búsqueda por nombres y apellidos
+        ELSE
+            aux := string_to_array(criterio, ' ');
+
+            RETURN QUERY
+            SELECT p.id_persona::text, c.id_paciente, p.tipo, p.ci, p.paterno, p.materno, p.nombres, p.fecha_nacimiento, p.sexo,
+                p.direccion, p.telefono, p.correo, p.estado_reg, p.usuario_reg, p.ip_reg
+            FROM public.persona p
+            INNER JOIN public.paciente c ON p.id_persona = c.id_persona
+            WHERE (
+                CASE array_length(aux, 1)
+                    WHEN 1 THEN normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(aux[1]) || '%'
+                    WHEN 2 THEN normalizar_cadena(p.nombres) LIKE '%' || normalizar_cadena(aux[1]) || '%' 
+                                AND normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(aux[2]) || '%'
+                    WHEN 3 THEN normalizar_cadena(p.nombres) LIKE '%' || normalizar_cadena(aux[1]) || '%' 
+                                AND normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(aux[2]) || '%' 
+                                AND normalizar_cadena(p.materno) LIKE '%' || normalizar_cadena(aux[3]) || '%'
+                    WHEN 4 THEN ((normalizar_cadena(p.nombres) LIKE '%' || normalizar_cadena(aux[1]) || '%' 
+                                OR normalizar_cadena(p.nombres) LIKE '%' || normalizar_cadena(aux[2]) || '%') 
+                                AND normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(aux[3]) || '%' 
+                                AND normalizar_cadena(p.materno) LIKE '%' || normalizar_cadena(aux[4]) || '%')
+                    ELSE normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(criterio) || '%'
+                END
+            ) AND c.estado_reg = 'V';
+        END IF;
+    END;
+    $function$
+    ;
+
+    CREATE OR REPLACE FUNCTION public.buscar_pacientes_enf_por_usuario(nombre_usuario character varying, criterio character varying DEFAULT NULL::character varying, fecha date DEFAULT CURRENT_DATE)
+    RETURNS TABLE(prestacion character varying, id_paciente integer, id_reserva integer, ci character varying, paterno character varying, materno character varying, nombres character varying, edad text, sexo character, fecha_reserva date, hora_reserva time without time zone)
+    LANGUAGE plpgsql
+    AS $function$
+    declare 
+        medico_id int;
+        rol_id int;
+        aux TEXT[];
+    begin
+        criterio := NULLIF(criterio, '');
+
+        select u.id_empleado, u.id_rol into medico_id, rol_id
+        from public.usuario u 
+        where u.nombre_usuario = buscar_pacientes_enf_por_usuario.nombre_usuario
+        and u.estado_reg = 'V';
+
+        if (medico_id is null) or (rol_id is null) then
+            return;
+        end if;
+
+        raise notice 'Criterio %', criterio;
+        
+
+        if criterio is null then
+            raise notice 'criterio nulo';
+            RETURN QUERY
+                SELECT e.nombre_prestacion, p.id_paciente, r.id_reserva, s.ci, s.paterno, s.materno, s.nombres,
+                    public.edad_a_texto(public.calcular_edad(s.fecha_nacimiento)) AS edad,
+                    s.sexo, r.fecha_reserva, r.hora_reserva
+                FROM turno t
+                INNER JOIN reserva r ON t.id_turno = r.id_turno
+                INNER JOIN paciente p ON r.id_paciente = p.id_paciente
+                INNER JOIN persona s ON p.id_persona = s.id_persona
+                inner join prestacion e on t.id_prestacion = e.id_prestacion
+                WHERE r.fecha_reserva = buscar_pacientes_enf_por_usuario.fecha
+                    and r.estado_reg = (
+                        case rol_id 
+                            when 2 then 'E' --atendido en enfermeria 
+                            when 3 then 'R' --atendido en caja
+                            when 4 then 'E' --atendido en enfermeria
+                            when 5 then 'V' --archivo creado vigente
+                            else r.estado_reg
+                        end ) 
+                ORDER BY r.hora_reserva;
+        -- Búsqueda por cédula de identidad
+        elsif criterio ~ '^\d+$' then
+            raise notice 'Criterio numeros'; 
+            RETURN QUERY
+                SELECT e.nombre_prestacion, p.id_paciente, r.id_reserva, s.ci, s.paterno, s.materno, s.nombres,
+                    public.edad_a_texto(public.calcular_edad(s.fecha_nacimiento)) AS edad,
+                    s.sexo, r.fecha_reserva, r.hora_reserva
+                FROM turno t
+                INNER JOIN reserva r ON t.id_turno = r.id_turno
+                INNER JOIN paciente p ON r.id_paciente = p.id_paciente
+                INNER JOIN persona s ON p.id_persona = s.id_persona
+                inner join prestacion e on t.id_prestacion = e.id_prestacion
+                WHERE r.fecha_reserva = buscar_pacientes_enf_por_usuario.fecha and s.ci LIKE '%' || criterio || '%'
+                    and r.estado_reg = (
+                        case rol_id 
+                            when 2 then 'E'  --atendido en enfermeria
+                            when 3 then 'R'  --atendido en caja
+                            when 4 then 'E'  --atendido en enfermeria
+                            when 5 then 'V'  --archivo creado vigente
+                            else r.estado_reg
+                        end ) 
+                ORDER BY r.hora_reserva;
+        -- Búsqueda por fecha de nacimiento
+        elsif criterio ~ '^(0[1-9]|[12][0-9]|3[01])[-\/](0[1-9]|1[0-2])[-\/](\d{4})$' then
+            raise notice 'fecha';
+            return query
+                SELECT e.nombre_prestacion, p.id_paciente,r.id_reserva, s.ci, s.paterno, s.materno, s.nombres,
+                    public.edad_a_texto(public.calcular_edad(s.fecha_nacimiento)) AS edad,
+                    s.sexo, r.fecha_reserva, r.hora_reserva
+                FROM turno t
+                INNER JOIN reserva r ON t.id_turno = r.id_turno
+                INNER JOIN paciente p ON r.id_paciente = p.id_paciente
+                INNER JOIN persona s ON p.id_persona = s.id_persona
+                inner join prestacion e on t.id_prestacion = e.id_prestacion
+                WHERE r.fecha_reserva = buscar_pacientes_enf_por_usuario.fecha 
+                    and s.fecha_nacimiento = CAST(criterio AS DATE)
+                    and t.id_medico = medico_id
+                    and r.estado_reg = (
+                        case rol_id 
+                            when 2 then 'E'  
+                            when 3 then 'R'
+                            when 4 then 'E'
+                            when 5 then 'V'
+                            else r.estado_reg
+                        end )
+                ORDER BY r.hora_reserva;
+        else
+            raise notice 'cadena de nombre';
+            aux := string_to_array(criterio, ' ');
+            raise notice 'aux %', buscar_pacientes_enf_por_usuario.fecha;
+            return query
+                SELECT e.nombre_prestacion, p.id_paciente, r.id_reserva, s.ci, s.paterno, s.materno, s.nombres,
+                    public.edad_a_texto(public.calcular_edad(s.fecha_nacimiento)) AS edad,
+                    s.sexo, r.fecha_reserva, r.hora_reserva
+                FROM turno t
+                INNER JOIN reserva r ON t.id_turno = r.id_turno
+                INNER JOIN paciente p ON r.id_paciente = p.id_paciente
+                INNER JOIN persona s ON p.id_persona = s.id_persona
+                inner join prestacion e on t.id_prestacion = e.id_prestacion
+                WHERE (
+                    CASE array_length(aux, 1)
+                        WHEN 1 THEN normalizar_cadena(s.paterno) LIKE '%' || normalizar_cadena(aux[1]) || '%'
+                        WHEN 2 THEN normalizar_cadena(s.nombres) LIKE '%' || normalizar_cadena(aux[1]) || '%' 
+                                    AND normalizar_cadena(s.paterno) LIKE '%' || normalizar_cadena(aux[2]) || '%'
+                        WHEN 3 THEN normalizar_cadena(s.nombres) LIKE '%' || normalizar_cadena(aux[1]) || '%' 
+                                    AND normalizar_cadena(s.paterno) LIKE '%' || normalizar_cadena(aux[2]) || '%' 
+                                    AND normalizar_cadena(s.materno) LIKE '%' || normalizar_cadena(aux[3]) || '%'
+                        WHEN 4 THEN ((normalizar_cadena(s.nombres) LIKE '%' || normalizar_cadena(aux[1]) || '%' 
+                                    OR normalizar_cadena(s.nombres) LIKE '%' || normalizar_cadena(aux[2]) || '%') 
+                                    AND normalizar_cadena(s.paterno) LIKE '%' || normalizar_cadena(aux[3]) || '%' 
+                                    AND normalizar_cadena(s.materno) LIKE '%' || normalizar_cadena(aux[4]) || '%')
+                        ELSE normalizar_cadena(s.paterno) LIKE '%' || normalizar_cadena(criterio) || '%'
+                    END
+                )
+            and r.fecha_reserva = buscar_pacientes_enf_por_usuario.fecha
+            and r.estado_reg = (
+                case rol_id 
+                    when 2 then 'E'  
+                    when 3 then 'R'
+                    when 4 then 'E'
+                    when 5 then 'V'
+                    else r.estado_reg
+                end ) 
+            ORDER BY r.hora_reserva;
+
+
+        end if;
+    end;
+    $function$
+    ;
+
+
+    CREATE OR REPLACE FUNCTION public.buscar_pacientes_por_usuario(nombre_usuario character varying, criterio character varying DEFAULT NULL::character varying, fecha date DEFAULT CURRENT_DATE)
+    RETURNS TABLE(id_paciente integer, id_reserva integer, ci character varying, paterno character varying, materno character varying, nombres character varying, edad text, sexo character, fecha_reserva date, hora_reserva time without time zone)
+    LANGUAGE plpgsql
+    AS $function$
+    declare 
+        medico_id int;
+        rol_id int;
+        aux TEXT[];
+    begin
+        criterio := NULLIF(criterio, '');
+
+
+        select u.id_empleado, u.id_rol into medico_id, rol_id
+        from public.usuario u 
+        where u.nombre_usuario = buscar_pacientes_por_usuario.nombre_usuario
+        and u.estado_reg = 'V';
+
+        if (medico_id is null) or (rol_id is null) then
+            return;
+        end if;
+        
+        if criterio is null then
+            RETURN QUERY
+                SELECT p.id_paciente, r.id_reserva, s.ci, s.paterno, s.materno, s.nombres,
+                    public.edad_a_texto(public.calcular_edad(s.fecha_nacimiento)) AS edad,
+                    s.sexo, r.fecha_reserva, r.hora_reserva
+                FROM turno t
+                INNER JOIN reserva r ON t.id_turno = r.id_turno
+                INNER JOIN paciente p ON r.id_paciente = p.id_paciente
+                INNER JOIN persona s ON p.id_persona = s.id_persona
+                WHERE r.fecha_reserva = buscar_pacientes_por_usuario.fecha
+                    and t.id_medico = medico_id
+                    and r.estado_reg = (
+                        case rol_id 
+                            when 2 then 'E'  
+                            when 3 then 'R'
+                            when 4 then 'E'
+                            when 5 then 'V'
+                            else r.estado_reg
+                        end ) 
+                ORDER BY r.hora_reserva;
+        -- Búsqueda por cédula de identidad
+        elsif criterio ~ '^\d+$' then
+            RETURN QUERY
+                SELECT p.id_paciente, r.id_reserva, s.ci, s.paterno, s.materno, s.nombres,
+                    public.edad_a_texto(public.calcular_edad(s.fecha_nacimiento)) AS edad,
+                    s.sexo, r.fecha_reserva, r.hora_reserva
+                FROM turno t
+                INNER JOIN reserva r ON t.id_turno = r.id_turno
+                INNER JOIN paciente p ON r.id_paciente = p.id_paciente
+                INNER JOIN persona s ON p.id_persona = s.id_persona
+                WHERE r.fecha_reserva = buscar_pacientes_por_usuario.fecha and s.ci LIKE '%' || criterio || '%'
+                    and t.id_medico = medico_id
+                    and r.estado_reg = (
+                        case rol_id 
+                            when 2 then 'E'  
+                            when 3 then 'R'
+                            when 4 then 'E'
+                            when 5 then 'V'
+                            else r.estado_reg
+                        end ) 
+                ORDER BY r.hora_reserva;
+        -- Búsqueda por fecha de nacimiento
+        elsif criterio ~ '^(0[1-9]|[12][0-9]|3[01])[-\/](0[1-9]|1[0-2])[-\/](\d{4})$' then
+            return query
+                SELECT p.id_paciente,r.id_reserva, s.ci, s.paterno, s.materno, s.nombres,
+                    public.edad_a_texto(public.calcular_edad(s.fecha_nacimiento)) AS edad,
+                    s.sexo, r.fecha_reserva, r.hora_reserva
+                FROM turno t
+                INNER JOIN reserva r ON t.id_turno = r.id_turno
+                INNER JOIN paciente p ON r.id_paciente = p.id_paciente
+                INNER JOIN persona s ON p.id_persona = s.id_persona
+                WHERE r.fecha_reserva = buscar_pacientes_por_usuario.fecha 
+                    and s.fecha_nacimiento = CAST(criterio AS DATE)
+                    and t.id_medico = medico_id
+                    and r.estado_reg = (
+                        case rol_id 
+                            when 2 then 'E'  
+                            when 3 then 'R'
+                            when 4 then 'E'
+                            when 5 then 'V'
+                            else r.estado_reg
+                        end )
+                ORDER BY r.hora_reserva;
+        else
+
+            aux := string_to_array(criterio, ' ');
+            return query
+                SELECT p.id_paciente, r.id_reserva, s.ci, s.paterno, s.materno, s.nombres,
+                    public.edad_a_texto(public.calcular_edad(s.fecha_nacimiento)) AS edad,
+                    s.sexo, r.fecha_reserva, r.hora_reserva
+                FROM turno t
+                INNER JOIN reserva r ON t.id_turno = r.id_turno
+                INNER JOIN paciente p ON r.id_paciente = p.id_paciente
+                INNER JOIN persona s ON p.id_persona = s.id_persona
+                WHERE (
+                    CASE array_length(aux, 1)
+                        WHEN 1 THEN normalizar_cadena(s.paterno) LIKE '%' || normalizar_cadena(aux[1]) || '%'
+                        WHEN 2 THEN normalizar_cadena(s.nombres) LIKE '%' || normalizar_cadena(aux[1]) || '%' 
+                                    AND normalizar_cadena(s.paterno) LIKE '%' || normalizar_cadena(aux[2]) || '%'
+                        WHEN 3 THEN normalizar_cadena(s.nombres) LIKE '%' || normalizar_cadena(aux[1]) || '%' 
+                                    AND normalizar_cadena(s.paterno) LIKE '%' || normalizar_cadena(aux[2]) || '%' 
+                                    AND normalizar_cadena(s.materno) LIKE '%' || normalizar_cadena(aux[3]) || '%'
+                        WHEN 4 THEN ((normalizar_cadena(s.nombres) LIKE '%' || normalizar_cadena(aux[1]) || '%' 
+                                    OR normalizar_cadena(s.nombres) LIKE '%' || normalizar_cadena(aux[2]) || '%') 
+                                    AND normalizar_cadena(s.paterno) LIKE '%' || normalizar_cadena(aux[3]) || '%' 
+                                    AND normalizar_cadena(s.materno) LIKE '%' || normalizar_cadena(aux[4]) || '%')
+                        ELSE normalizar_cadena(s.paterno) LIKE '%' || normalizar_cadena(criterio) || '%'
+                    END
+                )
+            and t.id_medico = medico_id 
+            and r.estado_reg = (
+                case rol_id 
+                    when 2 then 'E'  
+                    when 3 then 'R'
+                    when 4 then 'E'
+                    when 5 then 'V'
+                    else r.estado_reg
+                end ) 
+            ORDER BY r.hora_reserva;
+
+
+        end if;
+    end;
+    $function$
+    ;
+
 
     CREATE OR REPLACE FUNCTION public.buscar_personas(criterio text DEFAULT NULL::text)
     RETURNS TABLE(id_persona text, tipo character, ci character varying, paterno character varying, materno character varying, nombres character varying, fecha_nacimiento date, sexo character, estado_reg character, usuario_reg character varying, ip_reg character varying)
@@ -180,126 +704,31 @@ def preparar_bd():
     $function$
     ;
 
-    CREATE OR REPLACE FUNCTION public.buscar_pacientes(criterio text DEFAULT NULL::text)
-    RETURNS TABLE(id_persona text, tipo character, ci character varying, paterno character varying, materno character varying, nombres character varying, fecha_nacimiento date, sexo character, estado_reg character, usuario_reg character varying, ip_reg character varying)
+
+    CREATE OR REPLACE FUNCTION public.calcular_edad(fecha_nacimiento date)
+    RETURNS edad
     LANGUAGE plpgsql
     AS $function$
     DECLARE
-        aux TEXT[];
+        edad_resultado public.edad;
+        anios INTEGER;
+        meses INTEGER;
+        dias INTEGER;
     BEGIN
-        -- Si criterio es NULL, retornar todos los registros activos
-        IF criterio IS NULL THEN
-            RETURN QUERY
-            SELECT p.id_persona::text, p.tipo, p.ci, p.paterno, p.materno, p.nombres, p.fecha_nacimiento, p.sexo,
-                p.estado_reg, p.usuario_reg, p.ip_reg
-            FROM public.persona p
-            INNER JOIN public.paciente c ON p.id_persona = c.id_persona
-            WHERE c.estado_reg = 'V';
-        -- Búsqueda por cédula de identidad
-        ELSIF criterio ~ '^\d+$' THEN
-            RETURN QUERY
-            SELECT p.id_persona::text, p.tipo, p.ci, p.paterno, p.materno, p.nombres, p.fecha_nacimiento, p.sexo,
-                p.estado_reg, p.usuario_reg, p.ip_reg
-            FROM public.persona p
-            INNER JOIN public.paciente c ON p.id_persona = c.id_persona
-            WHERE c.estado_reg = 'V' AND p.ci LIKE '%' || criterio || '%';
-        -- Búsqueda por fecha de nacimiento
-        ELSIF criterio ~ '^(0[1-9]|[12][0-9]|3[01])[-\/](0[1-9]|1[0-2])[-\/](\d{4})$' THEN
-            RETURN QUERY
-            SELECT p.id_persona::text, p.tipo, p.ci, p.paterno, p.materno, p.nombres, p.fecha_nacimiento, p.sexo,
-                p.estado_reg, p.usuario_reg, p.ip_reg
-            FROM public.persona p
-            INNER JOIN public.paciente as c ON p.id_persona = c.id_persona
-            WHERE c.estado_reg = 'V' AND p.fecha_nacimiento = CAST(criterio AS DATE);
-        -- Búsqueda por nombres y apellidos
-        ELSE
-            aux := string_to_array(criterio, ' ');
+        -- Calcular la diferencia en años, meses y días
+        anios := DATE_PART('year', AGE(CURRENT_DATE, fecha_nacimiento));
+        meses := DATE_PART('month', AGE(CURRENT_DATE, fecha_nacimiento));
+        dias := DATE_PART('day', AGE(CURRENT_DATE, fecha_nacimiento));
 
-            RETURN QUERY
-            SELECT p.id_persona::text, p.tipo, p.ci, p.paterno, p.materno, p.nombres, p.fecha_nacimiento, p.sexo,
-                p.estado_reg, p.usuario_reg, p.ip_reg
-            FROM public.persona p
-            INNER JOIN public.paciente c ON p.id_persona = c.id_persona
-            WHERE (
-                CASE array_length(aux, 1)
-                    WHEN 1 THEN normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(aux[1]) || '%'
-                    WHEN 2 THEN normalizar_cadena(p.nombres) LIKE '%' || normalizar_cadena(aux[1]) || '%' 
-                                AND normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(aux[2]) || '%'
-                    WHEN 3 THEN normalizar_cadena(p.nombres) LIKE '%' || normalizar_cadena(aux[1]) || '%' 
-                                AND normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(aux[2]) || '%' 
-                                AND normalizar_cadena(p.materno) LIKE '%' || normalizar_cadena(aux[3]) || '%'
-                    WHEN 4 THEN ((normalizar_cadena(p.nombres) LIKE '%' || normalizar_cadena(aux[1]) || '%' 
-                                OR normalizar_cadena(p.nombres) LIKE '%' || normalizar_cadena(aux[2]) || '%') 
-                                AND normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(aux[3]) || '%' 
-                                AND normalizar_cadena(p.materno) LIKE '%' || normalizar_cadena(aux[4]) || '%')
-                    ELSE normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(criterio) || '%'
-                END
-            ) AND c.estado_reg = 'V';
-        END IF;
+        -- Asignar los valores al tipo compuesto edad
+        edad_resultado.anio := anios;
+        edad_resultado.mes := meses;
+        edad_resultado.dia := dias;
+
+        RETURN edad_resultado;
     END;
     $function$
     ;
-
-    CREATE OR REPLACE FUNCTION public.buscar_empleados(criterio text DEFAULT NULL::text)
-    RETURNS TABLE(id_persona text, tipo character, ci character varying, paterno character varying, materno character varying, nombres character varying, fecha_nacimiento date, sexo character, estado_reg character, usuario_reg character varying, ip_reg character varying)
-    LANGUAGE plpgsql
-    AS $function$
-    DECLARE
-        aux TEXT[];
-    BEGIN
-        -- Si criterio es NULL, retornar todos los registros activos
-        IF criterio IS NULL THEN
-            RETURN QUERY
-            SELECT p.id_persona::text, p.tipo, p.ci, p.paterno, p.materno, p.nombres, p.fecha_nacimiento, p.sexo,
-                p.estado_reg, p.usuario_reg, p.ip_reg
-            FROM public.persona p
-            INNER JOIN public.empleado e ON p.id_persona = e.id_persona
-            WHERE e.estado_reg = 'V';
-        -- Búsqueda por cédula de identidad
-        ELSIF criterio ~ '^\d+$' THEN
-            RETURN QUERY
-            SELECT p.id_persona::text, p.tipo, p.ci, p.paterno, p.materno, p.nombres, p.fecha_nacimiento, p.sexo,
-                p.estado_reg, p.usuario_reg, p.ip_reg
-            FROM public.persona p
-            INNER JOIN public.empleado e ON p.id_persona = e.id_persona
-            WHERE e.estado_reg = 'V' AND p.ci LIKE '%' || criterio || '%';
-        -- Búsqueda por fecha de nacimiento
-        ELSIF criterio ~ '^(0[1-9]|[12][0-9]|3[01])[-\/](0[1-9]|1[0-2])[-\/](\d{4})$' THEN
-            RETURN QUERY
-            SELECT p.id_persona::text, p.tipo, p.ci, p.paterno, p.materno, p.nombres, p.fecha_nacimiento, p.sexo,
-                p.estado_reg, p.usuario_reg, p.ip_reg
-            FROM public.persona p
-            INNER JOIN public.empleado e ON p.id_persona = e.id_persona
-            WHERE e.estado_reg = 'V' AND p.fecha_nacimiento = CAST(criterio AS DATE);
-        -- Búsqueda por nombres y apellidos
-        ELSE
-            aux := string_to_array(criterio, ' ');
-
-            RETURN QUERY
-            SELECT p.id_persona::text, p.tipo, p.ci, p.paterno, p.materno, p.nombres, p.fecha_nacimiento, p.sexo,
-                p.estado_reg, p.usuario_reg, p.ip_reg
-            FROM public.persona p
-            INNER JOIN public.empleado e ON p.id_persona = e.id_persona
-            WHERE (
-                CASE array_length(aux, 1)
-                    WHEN 1 THEN normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(aux[1]) || '%'
-                    WHEN 2 THEN normalizar_cadena(p.nombres) LIKE '%' || normalizar_cadena(aux[1]) || '%' 
-                                AND normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(aux[2]) || '%'
-                    WHEN 3 THEN normalizar_cadena(p.nombres) LIKE '%' || normalizar_cadena(aux[1]) || '%' 
-                                AND normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(aux[2]) || '%' 
-                                AND normalizar_cadena(p.materno) LIKE '%' || normalizar_cadena(aux[3]) || '%'
-                    WHEN 4 THEN ((normalizar_cadena(p.nombres) LIKE '%' || normalizar_cadena(aux[1]) || '%' 
-                                OR normalizar_cadena(p.nombres) LIKE '%' || normalizar_cadena(aux[2]) || '%') 
-                                AND normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(aux[3]) || '%' 
-                                AND normalizar_cadena(p.materno) LIKE '%' || normalizar_cadena(aux[4]) || '%')
-                    ELSE normalizar_cadena(p.paterno) LIKE '%' || normalizar_cadena(criterio) || '%'
-                END
-            ) AND e.estado_reg = 'V';
-        END IF;
-    END;
-    $function$
-    ;
-
 
     CREATE OR REPLACE FUNCTION public.edad_a_texto(edad edad)
     RETURNS text
@@ -311,20 +740,154 @@ def preparar_bd():
     $function$
     ;
 
-    CREATE OR REPLACE FUNCTION public.fn_nombre_usuario(p_nombre_usuario character varying)
-    RETURNS TABLE(nombre_persona character varying, rol character varying, cargo character varying)
+    CREATE OR REPLACE FUNCTION public.es_dia_valido(anio integer, mes integer, dia integer)
+    RETURNS boolean
+    LANGUAGE plpgsql
+    IMMUTABLE
+    AS $function$
+        DECLARE
+            max_dias INTEGER;
+        BEGIN
+            IF mes < 1 OR mes > 12 OR dia < 1 THEN
+                RETURN FALSE;
+            END IF;
+
+            CASE mes
+                WHEN 2 THEN
+                    IF (anio % 4 = 0 AND anio % 100 <> 0) OR anio % 400 = 0 THEN
+                        max_dias := 29;
+                    ELSE
+                        max_dias := 28;
+                    END IF;
+                WHEN 4, 6, 9, 11 THEN
+                    max_dias := 30;
+                ELSE
+                    max_dias := 31;
+            END CASE;
+
+            RETURN dia <= max_dias;
+        END;
+        $function$
+    ;
+
+
+    CREATE OR REPLACE FUNCTION public.fn_fechasturno(nombre_usuario character varying, fecha date DEFAULT CURRENT_DATE)
+    RETURNS TABLE(id_turno integer, id_medico integer, dia_semana text, fecha_calendario date, hora_inicio time without time zone, hora_final time without time zone)
     LANGUAGE plpgsql
     AS $function$
-    BEGIN
-        select p.nombres, coalesce(p.paterno, '') || ' ' || coalesce(p.materno, '') || ', ' || coalesce(p.nombres ) as nombre_persona, r.nombre as nombre_rol, e.cargo 
-        from persona as p 
-            inner join empleado as e on p.id_persona = e.id_persona
-            inner join usuario as u on e.id_empleado  = u.id_empleado
-            inner join rol as r on u.id_rol = r.id_rol
-        where u.nombre_usuario = p_nombre_usuario;
-    END;
+    declare
+        primer_dia date;
+        ultimo_dia date;
+        fecha_proc date;
+        medico_id int;
+        rol_id int;
+
+        begin
+
+            select u.id_empleado, u.id_rol into medico_id, rol_id
+            from public.usuario u 
+            where u.nombre_usuario = fn_fechasturno.nombre_usuario
+            and u.estado_reg = 'V';
+
+            if (medico_id is null) or (rol_id is null) then
+                return;
+            end if;
+            
+            if (date(fecha) = current_date) then
+                fecha_proc := current_date;
+            else
+                fecha_proc := fecha;
+            end if;
+
+            select date_trunc('month', fecha_proc)::date, (date_trunc('month', fecha_proc) + interval '1 month' - interval '1 day')::date into primer_dia, ultimo_dia;
+
+            return query
+                SELECT 
+                    t.id_turno,
+                    t.id_medico,
+                    case d.dia_valor :: text when 'D' then 'Domingo' when 'L' then 'Lúnes' when 'M' then 'Martes' when 'I' then 'Miércoles'
+                                            when 'J' then 'Jueves' when 'V' then 'Viernes' when 'S' then 'Sabado' end as diaSemana,
+                    fechas.dia::date AS fecha_calendario,
+                    t.hora_inicio,
+                    t.hora_final
+                    --d.dia_valor AS dia_configurado,
+                FROM public.turno t
+                -- 1. Expandimos el array de días (L, M, I...) a filas individuales
+                CROSS JOIN LATERAL unnest(t.dia_semana) AS d(dia_valor)
+                -- 2. Generamos el rango de fechas para ese turno
+                CROSS JOIN LATERAL generate_series(primer_dia, ultimo_dia, '1 day'::interval) AS fechas(dia)
+                WHERE
+                    fecha_proc between t.fecha_inicio and t.fecha_final 
+                    and 
+                        CASE d.dia_valor::text
+                            WHEN 'D' THEN 0 -- Domingo
+                            WHEN 'L' THEN 1 -- Lunes
+                            WHEN 'M' THEN 2 -- Martes
+                            WHEN 'I' THEN 3 -- Miércoles
+                            WHEN 'J' THEN 4 -- Jueves
+                            WHEN 'V' THEN 5 -- Viernes
+                            WHEN 'S' THEN 6 -- Sábado
+                        END = EXTRACT(DOW FROM fechas.dia) 
+                    and t.id_medico = medico_id;
+        end;
     $function$
     ;
+
+
+    CREATE OR REPLACE FUNCTION public.fn_fechasturno(idmedico integer, fecha date DEFAULT CURRENT_DATE)
+    RETURNS TABLE(id_turno integer, id_medico integer, dia_semana text, fecha_calendario date, hora_inicio time without time zone, hora_final time without time zone)
+    LANGUAGE plpgsql
+    AS $function$
+    declare
+        primer_dia date;
+        ultimo_dia date;
+        fecha_proc date;
+        begin
+            if (idMedico is null) then
+                return;
+            end if;
+            
+            if (date(fecha) = current_date) then
+                fecha_proc := current_date;
+            else
+                fecha_proc := fecha;
+            end if;
+
+            select date_trunc('month', fecha_proc)::date, (date_trunc('month', fecha_proc) + interval '1 month' - interval '1 day')::date into primer_dia, ultimo_dia;
+
+            return query
+                SELECT 
+                    t.id_turno,
+                    t.id_medico,
+                    case d.dia_valor :: text when 'D' then 'Domingo' when 'L' then 'Lúnes' when 'M' then 'Martes' when 'I' then 'Miércoles'
+                                            when 'J' then 'Jueves' when 'V' then 'Viernes' when 'S' then 'Sabado' end as diaSemana,
+                    fechas.dia::date AS fecha_calendario,
+                    t.hora_inicio,
+                    t.hora_final
+                    --d.dia_valor AS dia_configurado,
+                FROM public.turno t
+                -- 1. Expandimos el array de días (L, M, I...) a filas individuales
+                CROSS JOIN LATERAL unnest(t.dia_semana) AS d(dia_valor)
+                -- 2. Generamos el rango de fechas para ese turno
+                CROSS JOIN LATERAL generate_series(primer_dia, ultimo_dia, '1 day'::interval) AS fechas(dia)
+                WHERE
+                    fecha_proc between t.fecha_inicio and t.fecha_final 
+                    and 
+                        CASE d.dia_valor::text
+                            WHEN 'D' THEN 0 -- Domingo
+                            WHEN 'L' THEN 1 -- Lunes
+                            WHEN 'M' THEN 2 -- Martes
+                            WHEN 'I' THEN 3 -- Miércoles
+                            WHEN 'J' THEN 4 -- Jueves
+                            WHEN 'V' THEN 5 -- Viernes
+                            WHEN 'S' THEN 6 -- Sábado
+                        END = EXTRACT(DOW FROM fechas.dia) 
+                    and t.id_medico = idMedico;
+        end;
+    $function$
+    ;
+
+    -- DROP FUNCTION public.fn_obtener_menu_por_rol(varchar);
 
     CREATE OR REPLACE FUNCTION public.fn_obtener_menu_por_rol(p_nombre_rol character varying)
     RETURNS TABLE(nombre_menu character varying, ruta character varying, icono character varying, orden integer, metodo character varying[])
@@ -353,24 +916,77 @@ def preparar_bd():
     $function$
     ;
 
+
+    CREATE OR REPLACE FUNCTION public.fn_obtener_menu_por_usuario(p_nombre_usuario character varying)
+    RETURNS TABLE(nombre_menu character varying, ruta character varying, icono character varying, orden integer, metodo character varying[])
+    LANGUAGE plpgsql
+    AS $function$
+    BEGIN
+        RETURN QUERY
+        SELECT 
+            m.nombre_menu,
+            m.ruta,
+            m.icono,
+            m.orden,
+            rm.metodo
+        FROM 
+            public.rol r
+            JOIN public.rol_menu rm ON r.id_rol = rm.id_rol
+            JOIN public.menu m ON rm.id_menu = m.id_menu
+            join public.usuario u on r.id_rol = u.id_rol
+        WHERE 
+            upper(u.nombre_usuario) like  '%' ||  upper(p_nombre_usuario) || '%'
+            AND r.estado_reg = 'V'  -- Rol activo
+            AND m.estado_reg = 'V'  -- Menú activo
+            AND rm.estado_reg = 'V'  -- Relación activa
+        ORDER BY 
+            m.orden;
+    END;
+    $function$
+    ;
+
+    -- DROP FUNCTION public.fn_obtener_perfil_usuario(varchar);
+
+    CREATE OR REPLACE FUNCTION public.fn_obtener_perfil_usuario(p_nombre_usuario character varying)
+    RETURNS TABLE(nombre_completo text, nombre_centro character varying, nombre_rol character varying)
+    LANGUAGE plpgsql
+    AS $function$
+    begin
+            return query
+            select CAST(coalesce(p.paterno, '') || ' ' || coalesce(p.materno, '') || ', ' || coalesce(p.nombres, '') AS TEXT) nombre_completo, 
+            c.nombre_centro, r.nombre_rol  from usuario u 
+                inner join empleado e on u.id_empleado = e.id_empleado 
+                inner join persona p on e.id_persona = p.id_persona 
+                inner join centro c on e.id_centro = c.id_centro 
+                inner join rol r on u.id_rol = r.id_rol
+            where upper(u.nombre_usuario) like '%' || upper(p_nombre_usuario) || '%'
+                and u.estado_reg = 'V';
+    end;
+    $function$
+    ;
+
+    -- DROP FUNCTION public.fn_usuario(varchar);
+
     CREATE OR REPLACE FUNCTION public.fn_usuario(p_nombre_usuario character varying)
-    RETURNS TABLE(nombre_usuario character varying, clave character varying, centro_salud character varying, id_centro integer, usuario character varying, clave_centro character varying, direccion character varying, puerto integer, nombre_rol character varying)
+    RETURNS TABLE(nombre_usuario character varying, clave character varying, nombre_completo text, centro_salud character varying, id_centro integer, usuario_bd character varying, clave_bd character varying, direccion_bd character varying, puerto integer, nombre_rol character varying)
     LANGUAGE plpgsql
     AS $function$
     BEGIN
         RETURN QUERY
         SELECT 
             u.nombre_usuario,
-            u.clave,
+            u.clave, 
+            coalesce(p.paterno, '') || ' ' || coalesce(p.materno, '') ||', ' || coalesce(p.nombres, '') as nombre_completo,
             c.nombre_centro AS centro_salud,
             c.id_centro,
-            c.usuario,
-            c.clave,
-            c.direccion,
+            c.usuario as usuarbio_bd,
+            c.clave as clave_bd,
+            c.direccion as direccion_bd,
             c.puerto,
             r.nombre_rol as nombre_rol
         FROM usuario u
         INNER JOIN empleado e ON u.id_empleado = e.id_empleado
+        inner join persona p on e.id_persona = p.id_persona 
         INNER JOIN centro c ON e.id_centro = c.id_centro
         inner join rol r on u.id_rol = r.id_rol
         WHERE u.nombre_usuario = p_nombre_usuario;
@@ -391,6 +1007,9 @@ def preparar_bd():
     END;
     $function$
     ;
+
+    -- DROP FUNCTION public.obtener_lista_por_grupo(varchar);
+
     CREATE OR REPLACE FUNCTION public.obtener_lista_por_grupo(criterio character varying)
     RETURNS TABLE(codigo text, descripcion text)
     LANGUAGE plpgsql
@@ -414,7 +1033,7 @@ def preparar_bd():
                 WHERE l.id_grupo = v_id_grupo;
             ELSE
                 RETURN QUERY
-                SELECT l.cod_texto codigo, l.descripcion::TEXT descripcion  -- Conversión explícita
+                SELECT l.cod_texto::TEXT codigo, l.descripcion::TEXT descripcion  -- Conversión explícita
                 FROM public.lista l
                 WHERE l.id_grupo = v_id_grupo;
             END IF;
@@ -425,39 +1044,39 @@ def preparar_bd():
     $function$
     ;
 
-    CREATE OR REPLACE FUNCTION public.obtener_pacientes_por_usuario(nombre_usuario character varying, fecha date DEFAULT CURRENT_DATE)
-    RETURNS TABLE(id_paciente integer, ci character varying, paterno character varying, materno character varying, nombres character varying, edad text, fecha_reserva date, hora_reserva time without time zone)
-    LANGUAGE plpgsql
-    AS $function$
-    DECLARE
-        medico_id INT; -- Renombramos la variable para evitar conflicto
-    BEGIN
-        -- Obtener el id_empleado asociado al nombre de usuario
-        SELECT u.id_empleado INTO medico_id
-        FROM public.usuario u
-        WHERE u.nombre_usuario = obtener_pacientes_por_usuario.nombre_usuario
-            AND u.estado_reg = 'V'; -- Filtramos solo usuarios activos
-
-        -- Si no se encuentra el usuario, retornamos sin resultados
-        IF medico_id IS NULL THEN
-            RETURN;
-        END IF;
-
-        -- Recuperar pacientes atendidos por el médico asociado al usuario
-        RETURN QUERY
-        SELECT p.id_paciente, s.ci, s.paterno, s.materno, s.nombres,
-            edad_a_texto(calcular_edad_pg(s.fecha_nacimiento)) AS edad,
-            r.fecha_reserva, r.hora_reserva
-        FROM turno t
-        INNER JOIN reserva r ON t.id_turno = r.id_turno
-        INNER JOIN paciente p ON r.id_paciente = p.id_paciente
-        INNER JOIN persona s ON p.id_persona = s.id_persona
-        WHERE t.id_medico = medico_id  -- Aquí usamos la variable renombrada
-            AND r.fecha_reserva = obtener_pacientes_por_usuario.fecha
-        ORDER BY r.hora_reserva;
-    END;
-    $function$
+    CREATE OR REPLACE FUNCTION public.unaccent(text)
+    RETURNS text
+    LANGUAGE c
+    STABLE PARALLEL SAFE STRICT
+    AS '$libdir/unaccent', $function$unaccent_dict$function$
     ;
+
+
+    CREATE OR REPLACE FUNCTION public.unaccent(regdictionary, text)
+    RETURNS text
+    LANGUAGE c
+    STABLE PARALLEL SAFE STRICT
+    AS '$libdir/unaccent', $function$unaccent_dict$function$
+    ;
+
+
+    CREATE OR REPLACE FUNCTION public.unaccent_init(internal)
+    RETURNS internal
+    LANGUAGE c
+    PARALLEL SAFE
+    AS '$libdir/unaccent', $function$unaccent_init$function$
+    ;
+
+
+
+    CREATE OR REPLACE FUNCTION public.unaccent_lexize(internal, internal, internal, internal)
+    RETURNS internal
+    LANGUAGE c
+    PARALLEL SAFE
+    AS '$libdir/unaccent', $function$unaccent_lexize$function$
+    ;
+
+    -- DROP FUNCTION public.validate_reserva();
 
     CREATE OR REPLACE FUNCTION public.validate_reserva()
     RETURNS trigger
@@ -486,6 +1105,9 @@ def preparar_bd():
     END;
     $function$
     ;
+    
+
+    
 
 
 
