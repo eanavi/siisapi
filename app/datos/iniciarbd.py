@@ -55,7 +55,7 @@ def preparar_bd():
 
     do $$
     begin 
-        if not exist (select 1 from pg_type where typname = "dia_semana_enum") then 
+        if not exists (select 1 from pg_type where typname = "dia_semana_enum") then 
             create type public.dia_semana_enum as enum('L','M','I','J','V','S','D');
         end if;
     end
@@ -63,7 +63,7 @@ def preparar_bd():
 
     do $$
     begin
-        if not exist (select 1 from pg_type where typname = "edad") then
+        if not exists (select 1 from pg_type where typname = "edad") then
             create type public.edad as (anio int4, mes int4, dia int4);
         end if;
     end
