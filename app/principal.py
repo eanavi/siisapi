@@ -4,7 +4,7 @@ import os
 # Agregamos el directorio raíz del proyecto al sys.path para que se pueda encontrar el módulo 'app'
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Request, Depends, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from app.nucleo.baseDatos import leer_bd, init_bd
 from app.componentes.siis1n.rutas import router as siis1n_router
@@ -53,9 +53,13 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-app.include_router(siis1n_router)
-app.include_router(soaps_router)
-app.include_router(fhir_router)
+api_router = APIRouter()
+
+api_router.include_router(siis1n_router)
+api_router.include_router(soaps_router)
+api_router.include_router(fhir_router)
+
+app.include_router(api_router, prefix="/api")
 
 
 @app.get("/test-bd")
