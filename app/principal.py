@@ -6,6 +6,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 
 from fastapi import FastAPI, Request, Depends, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from app.nucleo.baseDatos import leer_bd, init_bd
 from app.componentes.siis1n.rutas import router as siis1n_router
 from app.componentes.soaps.rutas import router as soaps_router
@@ -62,7 +63,12 @@ api_router.include_router(fhir_router)
 app.include_router(api_router, prefix="/api")
 
 
-@app.get("/test-bd")
+@app.get('/favicon.ico', include_in_schema=False)
+async def favicon():
+    return FileResponse("static/favicon.ico")
+
+
+@app.get("/api/test-bd")
 def test_bd(db: Session = Depends(leer_bd)):
     try:
         db.execute(text('select 1'))
@@ -71,6 +77,6 @@ def test_bd(db: Session = Depends(leer_bd)):
         return {"mensaje": f"Error en la bd"}
 
 
-@app.get("/")
+@app.get("/api/")
 def leer_root(request: Request):
     return {"mensaje": "Bienvenido a la Api SiiS"}

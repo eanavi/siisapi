@@ -63,10 +63,16 @@ PERMISOS_ROLES = {
 
 
 def normalizar_ruta(ruta: str) -> str:
-    if ruta == "/":
+    # 1. Quitamos el prefijo /api si existe al inicio
+    ruta_sin_api = re.sub(r"^/api", "", ruta)
+    
+    # 2. Si quedó vacía o es solo '/', retornamos '/'
+    if not ruta_sin_api or ruta_sin_api == "/":
         return "/"
-    match = re.match(r"(/[\w-]+)", ruta)
-    return match.group(1) if match else ruta
+    
+    # 3. Tu lógica original para capturar el primer segmento (/personas, /usuarios, etc.)
+    match = re.match(r"(/[\w-]+)", ruta_sin_api)
+    return match.group(1) if match else ruta_sin_api
 
 
 
@@ -78,17 +84,16 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
         # if os.getenv("TEST_ENV") == "true":
         #    return await call_next(request)
-        if request.url.path in ["/","/favicon.ico","/test-bd","/docs", "/redoc", "/openapi.json"]:
+        if request.url.path in ["/api/","/favicon.ico","/api/test-bd","/api/docs", "/api/redoc", "/api/openapi.json"]:
             return await call_next(request)
 
         
 
         # Elegimos solo la ruta
-        print("Autorizando ruta:", request.url.path)
         ruta = normalizar_ruta(request.url.path)
         metodo = request.method
 
-        if request.url.path.startswith("/auth/login"):
+        if request.url.path.startswith("/api/auth/login"):
             return await call_next(request)
 
         if metodo not in PERMISOS_ROLES or ruta not in PERMISOS_ROLES[metodo]:
